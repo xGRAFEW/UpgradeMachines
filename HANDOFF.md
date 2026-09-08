@@ -28,6 +28,29 @@
 - Push + สร้าง Release `v1.1.0` แล้ว: https://github.com/xGRAFEW/UpgradeMachines/releases/tag/v1.1.0
 - **ยังไม่ได้ทดสอบจริงในเกม** (เข้าเซิร์ฟแล้วกดย่อคลิกขวาดูว่าอัพเกรดสำเร็จจริงไหม) — ที่ทดสอบไปคือแค่ "โหลด/enable ปลั๊กอินไม่มี error" เท่านั้น ถ้า session หน้าจะ verify เพิ่ม ให้เข้าเกมจริงแล้วลอง sneak+คลิกขวาที่เตาเผา/ฮอปเปอร์/ดิสเพนเซอร์/คราฟเตอร์
 
+### อัปเดต v1.2.0 (2026-09-08 17:0x-17:2x) — GUI ยืนยันอัพเกรด + Dropper + คงระดับติดไอเทม
+สามฟีเจอร์ใหญ่รวดเดียว ตามที่ผู้ใช้ขอเพิ่มทีละส่วนในบทสนทนา:
+
+1. **GUI ยืนยัน/ยกเลิกแทนอัพเกรดทันที** — Shift+คลิกขวาตอนนี้แค่ *เปิดกล่อง* (27 ช่อง) แสดงระดับปัจจุบัน→ใหม่ + ค่าประสิทธิภาพจริง (`describeEffect`) + ราคา แล้วมีปุ่ม §aยืนยันอัพเกรด / §cยกเลิกการอัพเกรด ให้กดเอง การหักเงิน/ไอเทม+เซ็ตระดับจริงเกิดตอนกด "ยืนยัน" เท่านั้น (เช็คสิทธิ์/ราคา/ระดับซ้ำอีกรอบตอนกดยืนยัน กันกรณีเงื่อนไขเปลี่ยนไปตอนกล่องเปิดค้าง)
+   - ไฟล์ใหม่: `gui/UpgradeConfirmHolder.java` (marker + เก็บ block/type), `gui/UpgradeConfirmGui.java` (สร้างกล่อง, slot คงที่ CONFIRM_SLOT=11/INFO_SLOT=13/CANCEL_SLOT=15), `listener/UpgradeConfirmGuiListener.java` (ดัก click+drag ในกล่อง, cancel ทุก click กันหยิบของ, ทำ transaction จริงตอนกด confirm — โค้ด logic เดียวกับที่เคยอยู่ใน `UpgradeToolListener.upgrade()` เดิม ย้ายมาที่นี่)
+   - `UpgradeToolListener.java` ตอนนี้แค่เช็คสิทธิ์+max-level แล้ว `player.openInventory(UpgradeConfirmGui.build(...))` ไม่มี logic หักเงิน/setLevel ในไฟล์นี้แล้ว
+
+2. **เพิ่ม Dropper เป็นเครื่องที่ 5** — `MachineType.DROPPER`, config section `dropper` (เหมือน dispenser ทุกอย่าง) ยุบ `DispenserUpgradeListener` ให้ใช้ interface กลาง `org.bukkit.block.Container` (แทน `org.bukkit.block.Dispenser` เจาะจง) เลยรองรับทั้ง Dispenser และ Dropper ในไฟล์เดียว — ตรวจสอบแล้วว่า `Dispenser`/`Dropper` ทั้งคู่ extends `Container` จริงในจากตัว jar (`javap`) ก่อนเขียนโค้ด
+   - `UpgradeManager.getDispenserExtraItems` เปลี่ยนเป็น `getExtraItems(MachineType, level)` ใช้ร่วมกันทั้ง dispenser/dropper (อ่าน `<configKey>.extra-items`)
+
+3. **คงระดับติดไอเทมเมื่อทุบ/วาง** — ไฟล์ใหม่ `listener/UpgradeItemPersistenceListener.java`:
+   - `BlockBreakEvent` (เฉพาะกรณี `event.isDropItems()==true` เช่นไม่ใช่ creative): ถ้าบล็อก level>0 → `setDropItems(false)` แล้วดรอปไอเทม custom เอง ตั้งชื่อ+lore ด้วย `manager.describeEffect(type, level)` (เช่น "ดรอปเปอร์ → Lv.3" / "ดรอปทีละ: 4 ชิ้น") พร้อมฝัง level ลง PDC ของ **ItemMeta** โดยใช้ `keys.level` ตัวเดียวกับที่ใช้บนบล็อก (คนละ holder แต่ NamespacedKey เดียวกันได้ ไม่มีปัญหา)
+   - `BlockPlaceEvent`: อ่าน PDC level จาก `event.getItemInHand()` ถ้ามี → `manager.setLevel(...)` ใส่บล็อกที่เพิ่งวางทันที (setLevel เดิม clamp ตาม max-level ปัจจุบันอยู่แล้ว)
+   - **ข้อจำกัดที่บันทึกไว้ใน README**: ครอบคลุมแค่ BlockBreakEvent ปกติ ไม่ครอบคลุมระเบิด/วิธีอื่น
+
+- เพิ่ม `MachineType.getDisplayName()` (ชื่อไทยของแต่ละเครื่อง) ใช้แทน `type.name()` (ENUM ตัวพิมพ์ใหญ่ภาษาอังกฤษ) ในข้อความ/GUI/lore ทั้งหมด, `/upgrade info` เพิ่มบรรทัดโชว์ `describeEffect` ด้วยถ้า level>0
+- อัปเดต `config.yml` (section `dropper`), `plugin.yml` (description), `README.md` (หัวข้อใหม่ "ทุบ/วางบล็อกที่อัพเกรดแล้ว" + คำอธิบาย GUI)
+- **bump เวอร์ชันเป็น 1.2.0**
+- **เหตุการณ์ระวังไว้**: ระหว่างทำงานลืมปิดเซิร์ฟทดสอบค้างไว้ทันทีหลัง verify v1.1.1 (เพราะ user ส่งข้อความใหม่มาแทรกกลางที) ทำให้ jar ใหม่ copy ทับไม่ได้ตอนแรก (`Device or resource busy`) ต้องเช็ค `Get-Process -Name java` แล้ว `taskkill` ตัวเก่าก่อนเสมอ **ก่อน deploy jar ใหม่ทุกครั้ง** ให้เช็คว่าไม่มี java process ค้างอยู่ก่อน
+- ทดสอบจริงบนเซิร์ฟ Purpur 26.2 test แล้ว — โหลด/enable v1.2.0 สำเร็จไม่มี error, เซิร์ฟหยุดเรียบร้อยหลังทดสอบ
+- **ยังไม่ commit/push/release v1.2.0** ณ จุดนี้ — เป็นขั้นถัดไป
+- **ยังไม่ได้ทดสอบจริงในเกม** ทั้ง 3 ฟีเจอร์ใหม่ (เปิดกล่อง GUI ได้จริงไหม, กดยืนยันแล้วอัพเกรดจริงไหม, ทุบ Dropper ที่อัพเกรดแล้วได้ไอเทมชื่อ/lore ถูกไหม, เอาไปวางแล้วระดับกลับมาไหม) — ทดสอบแค่ "โหลดไม่มี error" เท่านั้นเหมือนทุกรอบที่ผ่านมา ถ้าต้องการความมั่นใจเต็มร้อยต้องเข้าเกมจริงลองเล่น
+
 ### หมายเหตุการทดสอบรอบนี้ (2026-09-08 16:0x-16:15)
 - ตอนเริ่มงาน มีเซิร์ฟทดสอบตัวเดิม (PID เดิม) ค้างรันอยู่แล้วตั้งแต่ 13:13 (ไม่มีผู้เล่นออนไลน์เลยตลอด — เช็คจาก log ไม่มี "joined the game") จึงสั่ง `taskkill /PID <pid>` (ไม่ใช้ `/F`) เพื่อหยุดก่อนรันใหม่พร้อม jar ตัวใหม่
 - **ข้อสังเกต**: `taskkill` (ไม่ /F) บนเครื่องนี้ไม่ทำให้ log ขึ้นข้อความ "Stopping the server"/"Saving worlds" เลยทั้ง 2 รอบที่ทดสอบ — เป็นไปได้ว่า shutdown hook ของ Paper ไม่ได้ถูกเรียกแบบ graceful เต็มรูปแบบบน Windows ผ่านวิธีนี้ (ไม่มี error/corruption ให้เห็นหลังสตาร์ทใหม่ก็จริง แต่ควรระวัง) — ถ้าจะให้ปลอดภัยกว่านี้ในอนาคต ควรเปิด RCON (`enable-rcon=true` ใน `server.properties`, ตอนนี้ปิดอยู่) แล้วสั่ง `stop` ผ่าน RCON แทน

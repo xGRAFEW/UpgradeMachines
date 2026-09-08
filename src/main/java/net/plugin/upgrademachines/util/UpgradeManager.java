@@ -10,9 +10,9 @@ import java.util.List;
 
 /**
  * Reads/writes the upgrade level straight onto the block's own
- * PersistentDataContainer (every Furnace/Hopper/Dispenser/Crafter is a
- * TileState, so no external storage/database is needed) and resolves
- * the configured rate values per level.
+ * PersistentDataContainer (every Furnace/Hopper/Dispenser/Dropper/Crafter is
+ * a TileState, so no external storage/database is needed) and resolves the
+ * configured rate values per level.
  */
 public class UpgradeManager {
 
@@ -57,12 +57,24 @@ public class UpgradeManager {
         return getIntFromList("hopper.extra-transfers", level, 0);
     }
 
-    public int getDispenserExtraItems(int level) {
-        return getIntFromList("dispenser.extra-items", level, 0);
+    /** Extra items ejected per trigger, on top of the normal 1 - shared config shape for Dispenser/Dropper. */
+    public int getExtraItems(MachineType type, int level) {
+        return getIntFromList(type.getConfigKey() + ".extra-items", level, 0);
     }
 
     public int getCrafterExtraCrafts(int level) {
         return getIntFromList("crafter.cooldown-reduction-ticks", level, 0);
+    }
+
+    /** Short Thai description of what a level actually does - used in the confirm GUI and on upgraded item lore. */
+    public String describeEffect(MachineType type, int level) {
+        return switch (type) {
+            case FURNACE -> "เผาทีละ: " + getFurnaceBatchSize(level) + " ชิ้น";
+            case HOPPER -> "ส่งทีละ: " + (1 + getHopperExtraTransfers(level)) + " ชิ้น";
+            case DISPENSER -> "ยิงทีละ: " + (1 + getExtraItems(type, level)) + " ชิ้น";
+            case DROPPER -> "ดรอปทีละ: " + (1 + getExtraItems(type, level)) + " ชิ้น";
+            case CRAFTER -> "คราฟทีละ: " + (1 + getCrafterExtraCrafts(level)) + " ครั้ง";
+        };
     }
 
     // ---- Prices ----

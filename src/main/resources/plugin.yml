@@ -1,10 +1,10 @@
 name: UpgradeMachines
-version: '1.1.0'
+version: '1.2.0'
 main: net.plugin.upgrademachines.UpgradeMachinesPlugin
 api-version: '26.2'
 author: Claude
 softdepend: [Vault]
-description: 'ปลั๊กอินอัพเกรดเตาเผา (Furnace/BlastFurnace/Smoker), Hopper, Dispenser และ Crafter แบบวานิลลา - อัพเกรดแต่ละขั้นเพิ่มแค่ "อัตราเร็ว" เท่านั้น ไม่มีไอเทม/สูตรใหม่ กด Shift+คลิกขวาที่บล็อกเพื่ออัพเกรด ราคาอัพเกรดตั้งค่าได้ (เงินผ่าน Vault และ/หรือไอเทม)'
+description: 'ปลั๊กอินอัพเกรดเตาเผา (Furnace/BlastFurnace/Smoker), Hopper, Dispenser, Dropper และ Crafter แบบวานิลลา - อัพเกรดแต่ละขั้นเพิ่มแค่ "อัตราเร็ว" เท่านั้น ไม่มีไอเทม/สูตรใหม่ กด Shift+คลิกขวาที่บล็อกเพื่อเปิดกล่องยืนยันอัพเกรด ราคาอัพเกรดตั้งค่าได้ (เงินผ่าน Vault และ/หรือไอเทม) ทุบบล็อกที่อัพเกรดแล้วเก็บระดับติดไอเทมไปด้วย'
 
 commands:
   upgrade:

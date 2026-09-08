@@ -22,7 +22,7 @@ furnace:
   price:
     money: [0, 500, 1500, 3000, 6000]
     item:
-      material: IRON_INGOT
+      material: ""
       amounts: [0, 8, 16, 32, 64]
 
 hopper:
@@ -32,7 +32,7 @@ hopper:
   price:
     money: [0, 300, 800, 1500, 2500, 4000]
     item:
-      material: IRON_INGOT
+      material: ""
       amounts: [0, 4, 8, 16, 24, 32]
 
 dispenser:
@@ -42,7 +42,17 @@ dispenser:
   price:
     money: [0, 300, 800, 1500, 2500, 4000]
     item:
-      material: REDSTONE
+      material: ""
+      amounts: [0, 8, 16, 32, 48, 64]
+
+dropper:
+  max-level: 5
+  # จำนวนไอเทมพิเศษที่ดันออกเพิ่ม ต่อการทำงาน 1 ครั้ง (นอกเหนือจากของปกติ 1 ชิ้น)
+  extra-items: [0, 1, 2, 3, 4, 5]
+  price:
+    money: [0, 300, 800, 1500, 2500, 4000]
+    item:
+      material: ""
       amounts: [0, 8, 16, 32, 48, 64]
 
 crafter:
@@ -53,5 +63,5 @@ crafter:
   price:
     money: [0, 500, 1200, 2200, 3500, 5000]
     item:
-      material: AMETHYST_SHARD
+      material: ""
       amounts: [0, 4, 8, 12, 16, 20]
