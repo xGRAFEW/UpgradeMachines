@@ -12,15 +12,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * Right-click a supported block with the upgrade wand to raise its level by
- * 1 (capped at the configured max, charging that level's configured price
- * in money and/or items); shift + right-click to lower it by 1 for free
- * (no refund).
+ * Sneak + right-click a supported block to raise its level by 1 (capped at
+ * the configured max, charging that level's configured price in money
+ * and/or items). No wand or other item is needed - this works with an
+ * empty hand or anything held. A plain (non-sneaking) right-click is left
+ * untouched so the block still opens/works normally.
  */
 public class UpgradeToolListener implements Listener {
 
@@ -37,28 +36,21 @@ public class UpgradeToolListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (!event.getPlayer().isSneaking()) return;
+
         Block block = event.getClickedBlock();
         if (block == null) return;
 
+        MachineType type = MachineType.fromBlock(block.getType());
+        if (type == null) return;
+
         Player player = event.getPlayer();
-        ItemStack hand = event.getItem();
-        if (hand == null || !hand.hasItemMeta()) return;
 
-        ItemMeta meta = hand.getItemMeta();
-        boolean isWand = meta.getPersistentDataContainer().has(manager.getKeys().wandLevel, PersistentDataType.INTEGER);
-        if (!isWand) return;
-
-        // We're handling this ourselves - don't let it also open/use the block normally.
+        // We're handling this ourselves - don't let it also open the block normally.
         event.setCancelled(true);
 
-        MachineType type = MachineType.fromBlock(block.getType());
-        if (type == null) {
-            player.sendMessage("§cบล็อกนี้ไม่รองรับการอัพเกรด (รองรับ: เตาเผา, ฮอปเปอร์, ดิสเพนเซอร์, คราฟเตอร์)");
-            return;
-        }
-
         if (!player.hasPermission("upgrademachine.use")) {
-            player.sendMessage("§cคุณไม่มีสิทธิ์ใช้งานไม้อัพเกรด");
+            player.sendMessage("§cคุณไม่มีสิทธิ์อัพเกรดเครื่องจักร");
             return;
         }
 
@@ -66,22 +58,7 @@ public class UpgradeToolListener implements Listener {
         int current = manager.getLevel(state);
         int max = manager.getMaxLevel(type);
 
-        if (player.isSneaking()) {
-            downgrade(player, state, type, current, max);
-            return;
-        }
-
         upgrade(player, state, type, current, max);
-    }
-
-    private void downgrade(Player player, BlockState state, MachineType type, int current, int max) {
-        int target = Math.max(0, current - 1);
-        if (target == current) {
-            player.sendMessage("§eบล็อกนี้อยู่ที่ระดับต่ำสุดแล้ว");
-            return;
-        }
-        int applied = manager.setLevel(state, target, type);
-        player.sendMessage("§aลดระดับ " + type.name() + " เหลือ §f" + applied + "§a/" + max + " §7(ไม่มีการคืนเงิน/ไอเทม)");
     }
 
     private void upgrade(Player player, BlockState state, MachineType type, int current, int max) {

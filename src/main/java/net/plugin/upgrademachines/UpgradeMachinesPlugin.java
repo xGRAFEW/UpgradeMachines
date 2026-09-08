@@ -13,7 +13,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class UpgradeMachinesPlugin extends JavaPlugin {
 
-    private UpgradeKeys keys;
     private UpgradeManager upgradeManager;
     private EconomyHook economyHook;
 
@@ -21,7 +20,7 @@ public final class UpgradeMachinesPlugin extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
 
-        this.keys = new UpgradeKeys(this);
+        UpgradeKeys keys = new UpgradeKeys(this);
         this.upgradeManager = new UpgradeManager(this, keys);
         this.economyHook = new EconomyHook(this);
 
@@ -48,9 +47,5 @@ public final class UpgradeMachinesPlugin extends JavaPlugin {
 
     public UpgradeManager getUpgradeManager() {
         return upgradeManager;
-    }
-
-    public UpgradeKeys getKeys() {
-        return keys;
     }
 }

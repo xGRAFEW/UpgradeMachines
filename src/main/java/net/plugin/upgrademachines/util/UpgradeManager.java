@@ -95,8 +95,4 @@ public class UpgradeManager {
         if (index < 0 || index >= list.size()) return def;
         return list.get(index);
     }
-
-    public UpgradeKeys getKeys() {
-        return keys;
-    }
 }

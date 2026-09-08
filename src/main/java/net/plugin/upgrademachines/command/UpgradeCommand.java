@@ -11,9 +11,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -34,33 +31,18 @@ public class UpgradeCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("§e/upgrade wand §7- รับไม้อัพเกรด");
+            sender.sendMessage("§eShift + คลิกขวาที่เตาเผา/ฮอปเปอร์/ดิสเพนเซอร์/คราฟเตอร์ §7- อัพเกรด");
             sender.sendMessage("§e/upgrade info §7- ดูระดับอัพเกรดของบล็อกที่กำลังมอง");
             sender.sendMessage("§e/upgrade reload §7- โหลดค่า config ใหม่");
             return true;
         }
 
         switch (args[0].toLowerCase()) {
-            case "wand" -> handleWand(sender);
             case "info" -> handleInfo(sender);
             case "reload" -> handleReload(sender);
             default -> sender.sendMessage("§cคำสั่งไม่ถูกต้อง ใช้ /upgrade");
         }
         return true;
-    }
-
-    private void handleWand(CommandSender sender) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("§cคำสั่งนี้ใช้ได้เฉพาะในเกม");
-            return;
-        }
-        if (!sender.hasPermission("upgrademachine.admin")) {
-            sender.sendMessage("§cคุณไม่มีสิทธิ์");
-            return;
-        }
-        player.getInventory().addItem(createWand());
-        player.sendMessage("§aได้รับไม้อัพเกรดแล้ว! คลิกขวาที่เตาเผา/ฮอปเปอร์/ดิสเพนเซอร์/คราฟเตอร์เพื่ออัพเกรด");
-        player.sendMessage("§7(Shift + คลิกขวา = ลดระดับ)");
     }
 
     private void handleInfo(CommandSender sender) {
@@ -107,24 +89,10 @@ public class UpgradeCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§aโหลดค่า config ใหม่แล้ว");
     }
 
-    private ItemStack createWand() {
-        ItemStack item = new ItemStack(Material.AMETHYST_SHARD);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("§d§lไม้อัพเกรดเครื่องจักร");
-        meta.setLore(List.of(
-                "§7คลิกขวาที่บล็อก: §aเพิ่มระดับ",
-                "§7Shift + คลิกขวา: §cลดระดับ",
-                "§7รองรับ: เตาเผา, ฮอปเปอร์, ดิสเพนเซอร์, คราฟเตอร์"
-        ));
-        meta.getPersistentDataContainer().set(manager.getKeys().wandLevel, PersistentDataType.INTEGER, 1);
-        item.setItemMeta(meta);
-        return item;
-    }
-
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            List<String> options = new ArrayList<>(List.of("wand", "info", "reload"));
+            List<String> options = new ArrayList<>(List.of("info", "reload"));
             options.removeIf(s -> !s.startsWith(args[0].toLowerCase()));
             return options;
         }
