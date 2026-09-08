@@ -25,18 +25,21 @@ public final class UpgradeConfirmGui {
 
     public static Inventory build(Block block, MachineType type, int current, int target, int max,
                                    UpgradeManager manager, EconomyHook economy) {
-        UpgradeConfirmHolder holder = new UpgradeConfirmHolder(block, type);
-        Inventory inv = Bukkit.createInventory(holder, SIZE, "§8อัพเกรด " + type.getDisplayName());
-        holder.setInventory(inv);
-
-        ItemStack filler = namedItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
-        for (int i = 0; i < SIZE; i++) inv.setItem(i, filler);
-
         double moneyPrice = manager.getMoneyPrice(type, target);
         Material itemMaterial = manager.getItemPriceMaterial(type);
         int itemAmount = manager.getItemPriceAmount(type, target);
         boolean chargeMoney = moneyPrice > 0 && economy.isEnabled();
         boolean chargeItem = itemMaterial != null && itemAmount > 0;
+
+        String title = "§8" + type.getDisplayName() + " §f" + manager.describeEffect(type, target)
+                + " §7- " + priceSummary(chargeMoney, chargeItem, moneyPrice, itemAmount, itemMaterial, economy);
+
+        UpgradeConfirmHolder holder = new UpgradeConfirmHolder(block, type);
+        Inventory inv = Bukkit.createInventory(holder, SIZE, title);
+        holder.setInventory(inv);
+
+        ItemStack filler = namedItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        for (int i = 0; i < SIZE; i++) inv.setItem(i, filler);
 
         List<String> infoLore = new ArrayList<>();
         infoLore.add("§7ระดับ: §f" + current + " §7→ §aLv." + target + "§7/" + max);
@@ -58,6 +61,16 @@ public final class UpgradeConfirmGui {
                 List.of("§7ปิดกล่องนี้โดยไม่เสียเงิน/ไอเทม")));
 
         return inv;
+    }
+
+    private static String priceSummary(boolean chargeMoney, boolean chargeItem, double moneyPrice,
+                                        int itemAmount, Material itemMaterial, EconomyHook economy) {
+        if (!chargeMoney && !chargeItem) return "§aฟรี";
+        StringBuilder summary = new StringBuilder("§f");
+        if (chargeMoney) summary.append(economy.format(moneyPrice));
+        if (chargeMoney && chargeItem) summary.append(" §7+ §f");
+        if (chargeItem) summary.append(itemAmount).append("x ").append(itemMaterial.name());
+        return summary.toString();
     }
 
     private static ItemStack namedItem(Material material, String name, List<String> lore) {
