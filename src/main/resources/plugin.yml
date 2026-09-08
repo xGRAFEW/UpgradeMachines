@@ -1,0 +1,20 @@
+name: UpgradeMachines
+version: '1.0.0'
+main: net.plugin.upgrademachines.UpgradeMachinesPlugin
+api-version: '26.2'
+author: Claude
+softdepend: [Vault]
+description: 'ปลั๊กอินอัพเกรดเตาเผา (Furnace/BlastFurnace/Smoker), Hopper, Dispenser และ Crafter แบบวานิลลา - อัพเกรดแต่ละขั้นเพิ่มแค่ "อัตราเร็ว" เท่านั้น ไม่มีไอเทม/สูตรใหม่ ราคาอัพเกรดตั้งค่าได้ (เงินผ่าน Vault และ/หรือไอเทม)'
+
+commands:
+  upgrade:
+    description: จัดการการอัพเกรดเครื่องจักร
+    usage: /<command> [wand|info|reload]
+
+permissions:
+  upgrademachine.use:
+    description: อนุญาตให้ใช้ไม้อัพเกรดกับบล็อก
+    default: true
+  upgrademachine.admin:
+    description: อนุญาตให้รับไม้อัพเกรดและ reload config
+    default: op
