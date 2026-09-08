@@ -18,6 +18,16 @@
 
 **งานหลักที่ขอไว้เสร็จครบแล้ว** งานที่เหลือ (ถ้ามี) คือรอ Purpur 26.3 ออก stable build จริงแล้วค่อยอัปเกรด+รีเทสต์ตามหัวข้อด้านล่าง
 
+### อัปเดต v1.1.0 (2026-09-08 16:5x) — เปลี่ยนวิธีอัพเกรด
+ผู้ใช้ขอเปลี่ยนกลไก: **เอาไม้อัพเกรดออกทั้งหมด** เปลี่ยนเป็น **Shift (กดย่อ) + คลิกขวา** ที่บล็อกโดยตรงเพื่ออัพเกรด (ไม่ต้องถือไอเทมพิเศษ) และ**เอาฟีเจอร์ลดระดับ (downgrade) ออกทั้งหมด** — คลิกขวาแบบไม่กด Shift ยังคงเปิด/ใช้บล็อกตามปกติแบบวานิลลาเหมือนเดิม
+- แก้ `UpgradeToolListener.java`: ลบการเช็คไม้ (PDC `wandLevel` บนไอเทม) ออก, trigger ใหม่คือ `action==RIGHT_CLICK_BLOCK && player.isSneaking() && MachineType.fromBlock(...) != null` แล้วค่อย `event.setCancelled(true)` (เดิม cancel event ทุกกรณีที่ถือไม้ ทำให้ non-sneak click ไม่ถูกแตะต้องอีกต่อไป) ลบ `downgrade()` method ทิ้ง
+- ลบ `wandLevel` ออกจาก `UpgradeKeys.java`, ลบ `/upgrade wand` + `createWand()` ออกจาก `UpgradeCommand.java`, ลบ `getKeys()` accessor ที่ไม่มีใครเรียกใช้แล้วออกจากทั้ง `UpgradeManager.java` และ `UpgradeMachinesPlugin.java`
+- อัปเดต `plugin.yml` (description/permission/usage) และ `README.md` ให้ตรงกับกลไกใหม่
+- **bump เวอร์ชันเป็น 1.1.0** (`pom.xml` + `plugin.yml`) เพราะเป็น behavior change ที่ผู้เล่น/แอดมินเห็นชัดเจน
+- ทดสอบจริงบนเซิร์ฟ Purpur 26.2 test แล้ว 2 รอบ (ครั้งแรกตอนแก้โค้ด, ครั้งที่สองหลัง bump เวอร์ชัน) — โหลด/enable สำเร็จไม่มี error ทั้งคู่
+- Push + สร้าง Release `v1.1.0` แล้ว: https://github.com/xGRAFEW/UpgradeMachines/releases/tag/v1.1.0
+- **ยังไม่ได้ทดสอบจริงในเกม** (เข้าเซิร์ฟแล้วกดย่อคลิกขวาดูว่าอัพเกรดสำเร็จจริงไหม) — ที่ทดสอบไปคือแค่ "โหลด/enable ปลั๊กอินไม่มี error" เท่านั้น ถ้า session หน้าจะ verify เพิ่ม ให้เข้าเกมจริงแล้วลอง sneak+คลิกขวาที่เตาเผา/ฮอปเปอร์/ดิสเพนเซอร์/คราฟเตอร์
+
 ### หมายเหตุการทดสอบรอบนี้ (2026-09-08 16:0x-16:15)
 - ตอนเริ่มงาน มีเซิร์ฟทดสอบตัวเดิม (PID เดิม) ค้างรันอยู่แล้วตั้งแต่ 13:13 (ไม่มีผู้เล่นออนไลน์เลยตลอด — เช็คจาก log ไม่มี "joined the game") จึงสั่ง `taskkill /PID <pid>` (ไม่ใช้ `/F`) เพื่อหยุดก่อนรันใหม่พร้อม jar ตัวใหม่
 - **ข้อสังเกต**: `taskkill` (ไม่ /F) บนเครื่องนี้ไม่ทำให้ log ขึ้นข้อความ "Stopping the server"/"Saving worlds" เลยทั้ง 2 รอบที่ทดสอบ — เป็นไปได้ว่า shutdown hook ของ Paper ไม่ได้ถูกเรียกแบบ graceful เต็มรูปแบบบน Windows ผ่านวิธีนี้ (ไม่มี error/corruption ให้เห็นหลังสตาร์ทใหม่ก็จริง แต่ควรระวัง) — ถ้าจะให้ปลอดภัยกว่านี้ในอนาคต ควรเปิด RCON (`enable-rcon=true` ใน `server.properties`, ตอนนี้ปิดอยู่) แล้วสั่ง `stop` ผ่าน RCON แทน
