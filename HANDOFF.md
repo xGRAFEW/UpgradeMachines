@@ -12,9 +12,11 @@
 - [x] `git init` + `.gitignore`
 - [x] build สำเร็จด้วย Maven พกพา (`.tools/apache-maven-3.9.9`) + JDK 25 → ได้ `target/upgrademachines-1.0.0.jar`
 - [x] deploy jar ไปเซิร์ฟทดสอบจริง + รันเซิร์ฟจริงยืนยันแล้ว: **`UpgradeMachines` โหลด/enable สำเร็จ ไม่มี error** (log: `Loading server plugin UpgradeMachines v1.0.0` → `Enabling...` → `UpgradeMachines เปิดใช้งานแล้ว!`) เซิร์ฟหยุดเรียบร้อยหลังทดสอบ
-- [ ] commit แรกเข้า git
-- [ ] สร้าง GitHub repo `xGRAFEW/UpgradeMachines` (ยังไม่มีอยู่ ตรวจสอบแล้วด้วย `gh repo list`/`gh repo view`) + push
-- [ ] สร้าง GitHub Release พร้อมแนบ jar ที่ build แล้ว
+- [x] commit แรกเข้า git (`4eb62a2`)
+- [x] สร้าง GitHub repo `xGRAFEW/UpgradeMachines` (public) + push → https://github.com/xGRAFEW/UpgradeMachines
+- [x] สร้าง GitHub Release `v1.0.0` พร้อมแนบ `upgrademachines-1.0.0.jar` → https://github.com/xGRAFEW/UpgradeMachines/releases/tag/v1.0.0
+
+**งานหลักที่ขอไว้เสร็จครบแล้ว** งานที่เหลือ (ถ้ามี) คือรอ Purpur 26.3 ออก stable build จริงแล้วค่อยอัปเกรด+รีเทสต์ตามหัวข้อด้านล่าง
 
 ### หมายเหตุการทดสอบรอบนี้ (2026-09-08 16:0x-16:15)
 - ตอนเริ่มงาน มีเซิร์ฟทดสอบตัวเดิม (PID เดิม) ค้างรันอยู่แล้วตั้งแต่ 13:13 (ไม่มีผู้เล่นออนไลน์เลยตลอด — เช็คจาก log ไม่มี "joined the game") จึงสั่ง `taskkill /PID <pid>` (ไม่ใช้ `/F`) เพื่อหยุดก่อนรันใหม่พร้อม jar ตัวใหม่
