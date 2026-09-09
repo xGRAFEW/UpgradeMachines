@@ -74,6 +74,17 @@
 - ทดสอบจริงบนเซิร์ฟ Purpur 26.2 test แล้ว — โหลด/enable v1.3.0 สำเร็จไม่มี error, ปิดเซิร์ฟเรียบร้อยหลังทดสอบ
 - **ยังไม่ได้ทดสอบในเกมจริงว่าเปลี่ยน `display-name` ใน config แล้วชื่อไปโผล่ถูกที่จริงไหม** (GUI title, `/upgrade info`, ไอเทมที่ดรอป) — ที่ยืนยันคือแค่ enable ไม่มี error เท่านั้น
 
+### อัปเดต v1.4.0 (2026-09-09) — หน้าตากล่องยืนยันอัพเกรด + ชื่อไอเทมที่ดรอป ตั้งค่าละเอียดได้ผ่าน config.yml
+ผู้ใช้บอกว่า `display-name` (v1.3.0) ยังไม่พอ — อยากแก้ "หน้า GUI ตอนอัพเกรด" (ปุ่ม/lore/สี/ไอเทมเติมช่องว่าง/รูปแบบ title) กับ "ชื่อไอเทมแต่ละชนิดแบบละเอียด" ด้วย ถามกลับผ่าน AskUserQuestion 2 ข้อเพื่อกันเดาผิด: (1) อยากได้ชื่อแยกรายระดับ (Lv.1 ชื่อหนึ่ง Lv.2 อีกชื่อ) หรือแค่แก้รูปแบบข้อความ → ผู้ใช้ตอบว่า **แค่รูปแบบข้อความ** ไม่ใช่ต่อระดับ (2) อยากแก้ส่วนไหนของกล่อง → ผู้ใช้เลือก **ปุ่ม/lore, ไอเทม/สีของปุ่มและช่องว่าง, รูปแบบ title** ทั้ง 3 ข้อ
+- เพิ่ม section `gui:` ใหม่ใน `config.yml` (อยู่บนสุด ก่อน `furnace:`) คุม `title-format`, `info-item.name-format`/`lore`, `confirm-button.material`/`name`/`lore`, `cancel-button.material`/`name`/`lore`, `filler.material`, `item-name-format`/`item-lore-format` (ใช้กับไอเทมที่ดรอปตอนทุบบล็อกที่อัพเกรดแล้ว) — ทุกช่องข้อความรองรับ placeholder `{name}`/`{level}`/`{current}`/`{max}`/`{effect}`/`{price}` และสีโค้ด `&`
+- เพิ่มใน `UpgradeManager.java`: `formatText(...)`/`formatTextList(...)` (แปลงสี `&`→ChatColor + แทน placeholder ทั้ง 6 ตัว) และ getter อ่านค่าจาก `gui.*` ทั้งหมด พร้อม fallback เป็นค่าเดิมที่เคย hardcode ถ้า config เก่ายังไม่มี section นี้ (`getStringListOrDefault`/`getMaterialOrDefault`)
+- แก้ `UpgradeConfirmGui.build()` ให้ประกอบ title/info-item/confirm-button/cancel-button/filler ทั้งหมดจาก `manager.formatText(...)` แทนสตริง hardcode เดิม (ลบ `import java.util.ArrayList` ที่ไม่ใช้แล้วออกด้วย)
+- แก้ `UpgradeItemPersistenceListener.createUpgradedItem()` ให้ใช้ `manager.getItemNameFormat()`/`getItemLoreFormat()` แทนสตริง hardcode (ที่นี่ `{level}` = `{current}` = ระดับของไอเทมนั้น ๆ, `{price}` ว่างเปล่าเพราะไม่มีราคาเกี่ยวข้อง)
+- อัปเดต README.md เพิ่มหัวข้อ "หน้าตากล่องยืนยันอัพเกรด + ชื่อไอเทมที่ดรอป (config.yml → gui:)" อธิบาย placeholder ทั้งหมด + ตัวอย่างเต็ม
+- bump เวอร์ชันเป็น 1.4.0 (`pom.xml` + `plugin.yml`)
+- ทดสอบจริงบนเซิร์ฟ Purpur 26.2 test แล้ว — โหลด/enable v1.4.0 สำเร็จไม่มี error (`Done (44.454s)!`), ปิดเซิร์ฟเรียบร้อยหลังทดสอบ
+- **ยังไม่ได้เข้าเกมจริงเปิดกล่องยืนยันอัพเกรดดูว่าปุ่ม/สี/title ที่ตั้งค่าใหม่ออกมาถูกต้องตามที่ตั้งไว้ไหม** — ที่ยืนยันคือแค่ enable ไม่มี error เท่านั้น ถ้า session หน้ามีโอกาสควรเข้าเกมลอง Shift+คลิกขวาที่เตาเผาดูกล่องจริง
+
 ### หมายเหตุการทดสอบรอบนี้ (2026-09-08 16:0x-16:15)
 - ตอนเริ่มงาน มีเซิร์ฟทดสอบตัวเดิม (PID เดิม) ค้างรันอยู่แล้วตั้งแต่ 13:13 (ไม่มีผู้เล่นออนไลน์เลยตลอด — เช็คจาก log ไม่มี "joined the game") จึงสั่ง `taskkill /PID <pid>` (ไม่ใช้ `/F`) เพื่อหยุดก่อนรันใหม่พร้อม jar ตัวใหม่
 - **ข้อสังเกต**: `taskkill` (ไม่ /F) บนเครื่องนี้ไม่ทำให้ log ขึ้นข้อความ "Stopping the server"/"Saving worlds" เลยทั้ง 2 รอบที่ทดสอบ — เป็นไปได้ว่า shutdown hook ของ Paper ไม่ได้ถูกเรียกแบบ graceful เต็มรูปแบบบน Windows ผ่านวิธีนี้ (ไม่มี error/corruption ให้เห็นหลังสตาร์ทใหม่ก็จริง แต่ควรระวัง) — ถ้าจะให้ปลอดภัยกว่านี้ในอนาคต ควรเปิด RCON (`enable-rcon=true` ใน `server.properties`, ตอนนี้ปิดอยู่) แล้วสั่ง `stop` ผ่าน RCON แทน

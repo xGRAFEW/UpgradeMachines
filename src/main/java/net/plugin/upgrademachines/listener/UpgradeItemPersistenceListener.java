@@ -70,8 +70,10 @@ public class UpgradeItemPersistenceListener implements Listener {
     private ItemStack createUpgradedItem(Material material, MachineType type, int level) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("§b" + manager.getDisplayName(type) + " §f→ §bLv." + level);
-        meta.setLore(List.of("§7" + manager.describeEffect(type, level)));
+        String effect = manager.describeEffect(type, level);
+        int max = manager.getMaxLevel(type);
+        meta.setDisplayName(manager.formatText(manager.getItemNameFormat(), type, level, level, max, effect, ""));
+        meta.setLore(manager.formatTextList(manager.getItemLoreFormat(), type, level, level, max, effect, ""));
         meta.getPersistentDataContainer().set(keys.level, PersistentDataType.INTEGER, level);
         item.setItemMeta(meta);
         return item;

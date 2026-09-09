@@ -1,5 +1,5 @@
 name: UpgradeMachines
-version: '1.3.0'
+version: '1.4.0'
 main: net.plugin.upgrademachines.UpgradeMachinesPlugin
 api-version: '26.2'
 author: Claude

@@ -10,7 +10,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /** Builds the confirm/cancel GUI shown when a player sneak + right-clicks a supported machine. */
@@ -31,34 +30,29 @@ public final class UpgradeConfirmGui {
         boolean chargeMoney = moneyPrice > 0 && economy.isEnabled();
         boolean chargeItem = itemMaterial != null && itemAmount > 0;
 
-        String title = "§8" + manager.getDisplayName(type) + " §f" + manager.describeEffect(type, target)
-                + " §7- " + priceSummary(chargeMoney, chargeItem, moneyPrice, itemAmount, itemMaterial, economy);
+        String effect = manager.describeEffect(type, target);
+        String price = priceSummary(chargeMoney, chargeItem, moneyPrice, itemAmount, itemMaterial, economy);
+
+        String title = manager.formatText(manager.getGuiTitleFormat(), type, current, target, max, effect, price);
 
         UpgradeConfirmHolder holder = new UpgradeConfirmHolder(block, type);
         Inventory inv = Bukkit.createInventory(holder, SIZE, title);
         holder.setInventory(inv);
 
-        ItemStack filler = namedItem(Material.GRAY_STAINED_GLASS_PANE, " ", null);
+        ItemStack filler = namedItem(manager.getGuiFillerMaterial(), " ", null);
         for (int i = 0; i < SIZE; i++) inv.setItem(i, filler);
 
-        List<String> infoLore = new ArrayList<>();
-        infoLore.add("§7ระดับ: §f" + current + " §7→ §aLv." + target + "§7/" + max);
-        infoLore.add("§7ผล: §f" + manager.describeEffect(type, target));
-        infoLore.add("");
-        if (chargeMoney || chargeItem) {
-            infoLore.add("§7ราคา:");
-            if (chargeMoney) infoLore.add("  §f" + economy.format(moneyPrice));
-            if (chargeItem) infoLore.add("  §f" + itemAmount + "x " + itemMaterial.name());
-        } else {
-            infoLore.add("§7ราคา: §aฟรี");
-        }
-        inv.setItem(INFO_SLOT, namedItem(block.getType(),
-                "§b§l" + manager.getDisplayName(type) + " §f→ §bLv." + target, infoLore));
+        String infoName = manager.formatText(manager.getGuiInfoNameFormat(), type, current, target, max, effect, price);
+        List<String> infoLore = manager.formatTextList(manager.getGuiInfoLoreFormat(), type, current, target, max, effect, price);
+        inv.setItem(INFO_SLOT, namedItem(block.getType(), infoName, infoLore));
 
-        inv.setItem(CONFIRM_SLOT, namedItem(Material.LIME_STAINED_GLASS_PANE, "§a§lยืนยันอัพเกรด",
-                List.of("§7คลิกเพื่อยืนยันการอัพเกรด")));
-        inv.setItem(CANCEL_SLOT, namedItem(Material.RED_STAINED_GLASS_PANE, "§c§lยกเลิกการอัพเกรด",
-                List.of("§7ปิดกล่องนี้โดยไม่เสียเงิน/ไอเทม")));
+        String confirmName = manager.formatText(manager.getGuiConfirmButtonName(), type, current, target, max, effect, price);
+        List<String> confirmLore = manager.formatTextList(manager.getGuiConfirmButtonLore(), type, current, target, max, effect, price);
+        inv.setItem(CONFIRM_SLOT, namedItem(manager.getGuiConfirmButtonMaterial(), confirmName, confirmLore));
+
+        String cancelName = manager.formatText(manager.getGuiCancelButtonName(), type, current, target, max, effect, price);
+        List<String> cancelLore = manager.formatTextList(manager.getGuiCancelButtonLore(), type, current, target, max, effect, price);
+        inv.setItem(CANCEL_SLOT, namedItem(manager.getGuiCancelButtonMaterial(), cancelName, cancelLore));
 
         return inv;
     }

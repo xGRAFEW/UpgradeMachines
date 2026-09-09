@@ -1,11 +1,13 @@
 package net.plugin.upgrademachines.util;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -111,5 +113,87 @@ public class UpgradeManager {
         List<Integer> list = plugin.getConfig().getIntegerList(path);
         if (index < 0 || index >= list.size()) return def;
         return list.get(index);
+    }
+
+    // ---- Configurable GUI/item text (config.yml "gui" section) ----
+
+    /** Applies &-color codes then substitutes {name}/{level}/{current}/{max}/{effect}/{price} in one template string. */
+    public String formatText(String template, MachineType type, int current, int target, int max, String effect, String price) {
+        return ChatColor.translateAlternateColorCodes('&', template)
+                .replace("{name}", getDisplayName(type))
+                .replace("{level}", String.valueOf(target))
+                .replace("{current}", String.valueOf(current))
+                .replace("{max}", String.valueOf(max))
+                .replace("{effect}", effect == null ? "" : effect)
+                .replace("{price}", price == null ? "" : price);
+    }
+
+    /** Same as {@link #formatText} but applied to every line of a lore list. */
+    public List<String> formatTextList(List<String> templates, MachineType type, int current, int target, int max, String effect, String price) {
+        List<String> result = new ArrayList<>(templates.size());
+        for (String line : templates) result.add(formatText(line, type, current, target, max, effect, price));
+        return result;
+    }
+
+    public String getGuiTitleFormat() {
+        return plugin.getConfig().getString("gui.title-format", "&8{name} &f{effect} &7- {price}");
+    }
+
+    public String getGuiInfoNameFormat() {
+        return plugin.getConfig().getString("gui.info-item.name-format", "&b&l{name} &f→ &bLv.{level}");
+    }
+
+    public List<String> getGuiInfoLoreFormat() {
+        return getStringListOrDefault("gui.info-item.lore", List.of(
+                "&7ระดับ: &f{current} &7→ &a{level}&7/{max}", "&7ผล: &f{effect}", "", "&7ราคา: &f{price}"));
+    }
+
+    public Material getGuiConfirmButtonMaterial() {
+        return getMaterialOrDefault("gui.confirm-button.material", Material.LIME_STAINED_GLASS_PANE);
+    }
+
+    public String getGuiConfirmButtonName() {
+        return plugin.getConfig().getString("gui.confirm-button.name", "&a&lยืนยันอัพเกรด");
+    }
+
+    public List<String> getGuiConfirmButtonLore() {
+        return getStringListOrDefault("gui.confirm-button.lore", List.of("&7คลิกเพื่อยืนยันการอัพเกรด"));
+    }
+
+    public Material getGuiCancelButtonMaterial() {
+        return getMaterialOrDefault("gui.cancel-button.material", Material.RED_STAINED_GLASS_PANE);
+    }
+
+    public String getGuiCancelButtonName() {
+        return plugin.getConfig().getString("gui.cancel-button.name", "&c&lยกเลิกการอัพเกรด");
+    }
+
+    public List<String> getGuiCancelButtonLore() {
+        return getStringListOrDefault("gui.cancel-button.lore", List.of("&7ปิดกล่องนี้โดยไม่เสียเงิน/ไอเทม"));
+    }
+
+    public Material getGuiFillerMaterial() {
+        return getMaterialOrDefault("gui.filler.material", Material.GRAY_STAINED_GLASS_PANE);
+    }
+
+    /** Name format for the item dropped when breaking an upgraded block (also used when applying it back on place). */
+    public String getItemNameFormat() {
+        return plugin.getConfig().getString("gui.item-name-format", "&b{name} &f→ &bLv.{level}");
+    }
+
+    public List<String> getItemLoreFormat() {
+        return getStringListOrDefault("gui.item-lore-format", List.of("&7{effect}"));
+    }
+
+    private List<String> getStringListOrDefault(String path, List<String> def) {
+        List<String> list = plugin.getConfig().getStringList(path);
+        return list.isEmpty() ? def : list;
+    }
+
+    private Material getMaterialOrDefault(String path, Material def) {
+        String name = plugin.getConfig().getString(path);
+        if (name == null || name.isBlank()) return def;
+        Material mat = Material.matchMaterial(name);
+        return mat != null ? mat : def;
     }
 }
