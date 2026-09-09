@@ -50,20 +50,32 @@ public class UpgradeManager {
         return plugin.getConfig().getInt(type.getConfigKey() + ".max-level", 5);
     }
 
-    /** Display name shown in GUI/messages/item names - configurable via display-name, falls back to the built-in Thai name. */
-    public String getDisplayName(MachineType type) {
-        return plugin.getConfig().getString(type.getConfigKey() + ".display-name", type.getDisplayName());
+    /**
+     * Display name for one specific block material at a specific level - used in the GUI,
+     * messages, and on dropped/held items. Each of display-names.<MATERIAL> and the shared
+     * display-name can be set in config.yml as either a single string (same name at every
+     * level) or a YAML list of strings indexed by level (index 0 = not upgraded, same
+     * convention as the rate lists like smelt-batch-size) so every level of every machine
+     * can have its own name. Resolution order: per-material name/level-list, then the shared
+     * display-name name/level-list, then the built-in Thai name.
+     */
+    public String getDisplayName(MachineType type, Material material, int level) {
+        String perMaterial = resolveConfiguredName(type.getConfigKey() + ".display-names." + material.name(), level);
+        if (perMaterial != null) return perMaterial;
+        String shared = resolveConfiguredName(type.getConfigKey() + ".display-name", level);
+        return shared != null ? shared : type.getDisplayName();
     }
 
-    /**
-     * Display name for one specific block material - lets machine types that group several
-     * vanilla blocks under one MachineType (e.g. FURNACE covers Furnace/Blast Furnace/Smoker)
-     * name each block differently. Looks up display-names.<MATERIAL> first, falling back to
-     * the shared display-name above when no per-material override is set.
-     */
-    public String getDisplayName(MachineType type, Material material) {
-        String override = plugin.getConfig().getString(type.getConfigKey() + ".display-names." + material.name());
-        return (override == null || override.isBlank()) ? getDisplayName(type) : override;
+    /** Reads a name that may be a single string or a level-indexed list; null if unset/blank/out of range. */
+    private String resolveConfiguredName(String path, int level) {
+        if (plugin.getConfig().isList(path)) {
+            List<String> names = plugin.getConfig().getStringList(path);
+            if (level < 0 || level >= names.size()) return null;
+            String value = names.get(level);
+            return (value == null || value.isBlank()) ? null : value;
+        }
+        String value = plugin.getConfig().getString(path);
+        return (value == null || value.isBlank()) ? null : value;
     }
 
     /** How many items a single cook cycle produces/consumes at this level (1 = vanilla). */
@@ -144,15 +156,40 @@ public class UpgradeManager {
 
     // ---- Configurable GUI/item text (config.yml "gui" section) ----
 
-    /** Applies &-color codes then substitutes {name}/{level}/{current}/{max}/{effect}/{price} in one template string. */
+    /**
+     * Applies &-color codes then substitutes {name}/{level}/{current}/{max}/{effect}/{price}
+     * (plain Arabic numbers) plus {level-roman}/{current-roman}/{max-roman} (Roman numeral
+     * versions, e.g. "IV" instead of "4" - level 0 has no Roman numeral so it prints as "0")
+     * in one template string.
+     */
     public String formatText(String template, MachineType type, Material material, int current, int target, int max, String effect, String price) {
         return ChatColor.translateAlternateColorCodes('&', template)
-                .replace("{name}", getDisplayName(type, material))
+                .replace("{name}", getDisplayName(type, material, target))
+                .replace("{level-roman}", toRoman(target))
+                .replace("{current-roman}", toRoman(current))
+                .replace("{max-roman}", toRoman(max))
                 .replace("{level}", String.valueOf(target))
                 .replace("{current}", String.valueOf(current))
                 .replace("{max}", String.valueOf(max))
                 .replace("{effect}", effect == null ? "" : effect)
                 .replace("{price}", price == null ? "" : price);
+    }
+
+    private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+    private static final String[] ROMAN_SYMBOLS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+
+    /** Converts to a Roman numeral (1-3999). Roman numerals have no zero/negative, so those print as-is. */
+    public static String toRoman(int number) {
+        if (number <= 0) return String.valueOf(number);
+        StringBuilder sb = new StringBuilder();
+        int remaining = number;
+        for (int i = 0; i < ROMAN_VALUES.length; i++) {
+            while (remaining >= ROMAN_VALUES[i]) {
+                remaining -= ROMAN_VALUES[i];
+                sb.append(ROMAN_SYMBOLS[i]);
+            }
+        }
+        return sb.toString();
     }
 
     /** Same as {@link #formatText} but applied to every line of a lore list. */
@@ -167,12 +204,12 @@ public class UpgradeManager {
     }
 
     public String getGuiInfoNameFormat() {
-        return plugin.getConfig().getString("gui.info-item.name-format", "&b&l{name} &f→ &bLv.{level}");
+        return plugin.getConfig().getString("gui.info-item.name-format", "&b&l{name} &f→ &bLv.{level-roman}");
     }
 
     public List<String> getGuiInfoLoreFormat() {
         return getStringListOrDefault("gui.info-item.lore", List.of(
-                "&7ระดับ: &f{current} &7→ &a{level}&7/{max}", "&7ผล: &f{effect}", "", "&7ราคา: &f{price}"));
+                "&7ระดับ: &f{current-roman} &7→ &a{level-roman}&7/{max-roman}", "&7ผล: &f{effect}", "", "&7ราคา: &f{price}"));
     }
 
     public Material getGuiConfirmButtonMaterial() {
@@ -205,7 +242,7 @@ public class UpgradeManager {
 
     /** Name format for the item dropped when breaking an upgraded block (also used when applying it back on place). */
     public String getItemNameFormat() {
-        return plugin.getConfig().getString("gui.item-name-format", "&b{name} &f→ &bLv.{level}");
+        return plugin.getConfig().getString("gui.item-name-format", "&b{name} &f→ &bLv.{level-roman}");
     }
 
     public List<String> getItemLoreFormat() {

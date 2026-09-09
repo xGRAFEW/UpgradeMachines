@@ -68,7 +68,7 @@ public class UpgradeConfirmGuiListener implements Listener {
         int max = manager.getMaxLevel(type);
         int target = Math.min(max, current + 1);
         if (target == current) {
-            player.sendMessage("§eบล็อกนี้อยู่ที่ระดับสูงสุดแล้ว (Lv. " + current + "/" + max + ")");
+            player.sendMessage("§eบล็อกนี้อยู่ที่ระดับสูงสุดแล้ว (Lv. " + UpgradeManager.toRoman(current) + "/" + UpgradeManager.toRoman(max) + ")");
             return;
         }
 
@@ -79,11 +79,11 @@ public class UpgradeConfirmGuiListener implements Listener {
         boolean chargeItem = itemMaterial != null && itemAmount > 0;
 
         if (chargeMoney && !economy.has(player, moneyPrice)) {
-            player.sendMessage("§cเงินไม่พอ! ต้องการ §f" + economy.format(moneyPrice) + "§c เพื่ออัพเกรดเป็น Lv." + target);
+            player.sendMessage("§cเงินไม่พอ! ต้องการ §f" + economy.format(moneyPrice) + "§c เพื่ออัพเกรดเป็น Lv." + UpgradeManager.toRoman(target));
             return;
         }
         if (chargeItem && !player.getInventory().containsAtLeast(new ItemStack(itemMaterial), itemAmount)) {
-            player.sendMessage("§cวัตถุดิบไม่พอ! ต้องการ §f" + itemAmount + "x " + itemMaterial.name() + "§c เพื่ออัพเกรดเป็น Lv." + target);
+            player.sendMessage("§cวัตถุดิบไม่พอ! ต้องการ §f" + itemAmount + "x " + itemMaterial.name() + "§c เพื่ออัพเกรดเป็น Lv." + UpgradeManager.toRoman(target));
             return;
         }
 
@@ -91,7 +91,8 @@ public class UpgradeConfirmGuiListener implements Listener {
         if (chargeItem) player.getInventory().removeItem(new ItemStack(itemMaterial, itemAmount));
 
         int applied = manager.setLevel(state, target, type);
-        StringBuilder msg = new StringBuilder("§aอัพเกรด " + manager.getDisplayName(type, block.getType()) + " สำเร็จ! ระดับปัจจุบัน: §f" + applied + "§a/" + max);
+        StringBuilder msg = new StringBuilder("§aอัพเกรด " + manager.getDisplayName(type, block.getType(), applied) + " สำเร็จ! ระดับปัจจุบัน: §f"
+                + UpgradeManager.toRoman(applied) + "§a/" + UpgradeManager.toRoman(max));
         if (chargeMoney || chargeItem) {
             msg.append(" §7(จ่าย: ");
             if (chargeMoney) msg.append(economy.format(moneyPrice));

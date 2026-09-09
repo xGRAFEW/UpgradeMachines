@@ -63,7 +63,8 @@ public class UpgradeCommand implements CommandExecutor, TabCompleter {
         BlockState state = block.getState();
         int lvl = manager.getLevel(state);
         int max = manager.getMaxLevel(type);
-        sender.sendMessage("§b" + manager.getDisplayName(type, block.getType()) + " §7ระดับ: §f" + lvl + "§7/" + max);
+        sender.sendMessage("§b" + manager.getDisplayName(type, block.getType(), lvl) + " §7ระดับ: §f"
+                + UpgradeManager.toRoman(lvl) + "§7/" + UpgradeManager.toRoman(max));
         if (lvl > 0) sender.sendMessage("§7ผล: §f" + manager.describeEffect(type, lvl));
 
         if (lvl < max) {
@@ -77,7 +78,7 @@ public class UpgradeCommand implements CommandExecutor, TabCompleter {
             if (itemMaterial != null && itemAmount > 0) parts.add(itemAmount + "x " + itemMaterial.name());
 
             String priceText = parts.isEmpty() ? "ฟรี" : String.join(" + ", parts);
-            sender.sendMessage("§7ราคาอัพเกรดเป็น Lv." + next + ": §f" + priceText);
+            sender.sendMessage("§7ราคาอัพเกรดเป็น Lv." + UpgradeManager.toRoman(next) + ": §f" + priceText);
         }
     }
 
