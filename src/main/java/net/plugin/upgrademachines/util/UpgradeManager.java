@@ -48,6 +48,11 @@ public class UpgradeManager {
         return plugin.getConfig().getInt(type.getConfigKey() + ".max-level", 5);
     }
 
+    /** Display name shown in GUI/messages/item names - configurable via display-name, falls back to the built-in Thai name. */
+    public String getDisplayName(MachineType type) {
+        return plugin.getConfig().getString(type.getConfigKey() + ".display-name", type.getDisplayName());
+    }
+
     /** How many items a single cook cycle produces/consumes at this level (1 = vanilla). */
     public int getFurnaceBatchSize(int level) {
         return getIntFromList("furnace.smelt-batch-size", level, 1);

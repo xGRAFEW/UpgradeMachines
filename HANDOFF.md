@@ -62,6 +62,18 @@
 - ทดสอบจริงบนเซิร์ฟ Purpur 26.2 test ทั้ง 2 รอบ (1.2.1 และ 1.2.2) — โหลด/enable สำเร็จไม่มี error ทั้งคู่, ปิดเซิร์ฟเรียบร้อยหลังทดสอบทุกครั้ง
 - **ยังไม่ได้เข้าเกมดูจริงว่า title ยาวเกินจอไหม/ตัวหนังสือ Thai ใน title bar อ่านง่ายไหม** — ควรลองเปิดกล่องจริงอีกรอบดูความยาว title ถ้ามีโอกาส
 
+### อัปเดต v1.3.0 (2026-09-09) — ชื่อไอเทมแก้ได้ผ่าน config.yml
+ผู้ใช้ถามว่าทำไมแก้ชื่อ "เตาเผา/ฮอปเปอร์/ดิสเพนเซอร์/คราฟเตอร์" ใน config.yml ไม่ได้ — พบว่าชื่อเหล่านี้ hardcode อยู่ใน `MachineType.java` (enum constructor) ไม่เคยอ่านจาก config เลย
+- เพิ่มฟิลด์ `display-name` ให้ทุก section ใน `config.yml` (furnace/hopper/dispenser/dropper/crafter) ตั้งค่าเริ่มต้นเป็นชื่อไทยเดิม
+- เพิ่ม `UpgradeManager.getDisplayName(MachineType)` อ่านจาก `<configKey>.display-name` โดย fallback เป็น `MachineType.getDisplayName()` เดิมถ้าไม่ได้ตั้งค่า (กัน config เก่าที่ยังไม่มีฟิลด์นี้พัง)
+- แก้ทุกจุดที่เคยเรียก `type.getDisplayName()` ตรง ๆ (GUI title/lore, `/upgrade info`, ข้อความอัพเกรดสำเร็จ, ชื่อไอเทมที่ดรอปตอนทุบบล็อกอัพเกรดแล้ว) ให้เรียก `manager.getDisplayName(type)` แทน — รวม 5 ไฟล์: `UpgradeCommand.java`, `UpgradeConfirmGui.java` (2 จุด), `UpgradeConfirmGuiListener.java`, `UpgradeItemPersistenceListener.java`
+- อัปเดต README.md หัวข้อ "ตั้งค่า (config.yml)" ให้พูดถึง `display-name`
+- **เหตุการณ์ระวังไว้**: `.tools/apache-maven-3.9.9` ที่เคยดาวน์โหลดไว้หายไปจากเครื่อง (โฟลเดอร์ `.tools` ไม่มีอยู่แล้วตอนเริ่ม session นี้) ต้องโหลดใหม่จาก `archive.apache.org` (dlcdn.apache.org คืน 404 ให้ ลิงก์รุ่นเก่าต้องใช้ archive) — ถ้า session หน้าเจอ `.tools` หายอีกให้ไปที่ archive.apache.org แทน dlcdn
+- **เหตุการณ์ระวังไว้ที่ 2**: `run.bat` ของเซิร์ฟทดสอบ hardcode พาธ JDK เป็น `jdk-25.0.3.9-hotspot` ซึ่งไม่มีอยู่จริงในเครื่องแล้ว (มีแต่ `jdk-25.0.4.101-hotspot` กับ `jdk-21.0.12.101-hotspot`) ทำให้ server process ตายเงียบทันทีตอน start (ไม่มี error ใน log เพราะ java.exe หา path ไม่เจอเลยไม่ได้รันด้วยซ้ำ) แก้โดยแก้ path ใน `run.bat` ให้ตรงกับ JDK ที่มีจริง — ถ้าเจอเซิร์ฟทดสอบ start ไม่ติดอีก ให้เช็คพาธ JDK ใน `run.bat` ก่อนเป็นอันดับแรก
+- bump เวอร์ชันเป็น 1.3.0 (`pom.xml` + `plugin.yml`) เพราะเป็นฟีเจอร์ใหม่ที่แอดมินใช้ได้
+- ทดสอบจริงบนเซิร์ฟ Purpur 26.2 test แล้ว — โหลด/enable v1.3.0 สำเร็จไม่มี error, ปิดเซิร์ฟเรียบร้อยหลังทดสอบ
+- **ยังไม่ได้ทดสอบในเกมจริงว่าเปลี่ยน `display-name` ใน config แล้วชื่อไปโผล่ถูกที่จริงไหม** (GUI title, `/upgrade info`, ไอเทมที่ดรอป) — ที่ยืนยันคือแค่ enable ไม่มี error เท่านั้น
+
 ### หมายเหตุการทดสอบรอบนี้ (2026-09-08 16:0x-16:15)
 - ตอนเริ่มงาน มีเซิร์ฟทดสอบตัวเดิม (PID เดิม) ค้างรันอยู่แล้วตั้งแต่ 13:13 (ไม่มีผู้เล่นออนไลน์เลยตลอด — เช็คจาก log ไม่มี "joined the game") จึงสั่ง `taskkill /PID <pid>` (ไม่ใช้ `/F`) เพื่อหยุดก่อนรันใหม่พร้อม jar ตัวใหม่
 - **ข้อสังเกต**: `taskkill` (ไม่ /F) บนเครื่องนี้ไม่ทำให้ log ขึ้นข้อความ "Stopping the server"/"Saving worlds" เลยทั้ง 2 รอบที่ทดสอบ — เป็นไปได้ว่า shutdown hook ของ Paper ไม่ได้ถูกเรียกแบบ graceful เต็มรูปแบบบน Windows ผ่านวิธีนี้ (ไม่มี error/corruption ให้เห็นหลังสตาร์ทใหม่ก็จริง แต่ควรระวัง) — ถ้าจะให้ปลอดภัยกว่านี้ในอนาคต ควรเปิด RCON (`enable-rcon=true` ใน `server.properties`, ตอนนี้ปิดอยู่) แล้วสั่ง `stop` ผ่าน RCON แทน

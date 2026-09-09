@@ -91,7 +91,7 @@ public class UpgradeConfirmGuiListener implements Listener {
         if (chargeItem) player.getInventory().removeItem(new ItemStack(itemMaterial, itemAmount));
 
         int applied = manager.setLevel(state, target, type);
-        StringBuilder msg = new StringBuilder("§aอัพเกรด " + type.getDisplayName() + " สำเร็จ! ระดับปัจจุบัน: §f" + applied + "§a/" + max);
+        StringBuilder msg = new StringBuilder("§aอัพเกรด " + manager.getDisplayName(type) + " สำเร็จ! ระดับปัจจุบัน: §f" + applied + "§a/" + max);
         if (chargeMoney || chargeItem) {
             msg.append(" §7(จ่าย: ");
             if (chargeMoney) msg.append(economy.format(moneyPrice));

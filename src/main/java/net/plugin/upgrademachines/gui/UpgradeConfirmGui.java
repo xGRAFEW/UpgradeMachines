@@ -31,7 +31,7 @@ public final class UpgradeConfirmGui {
         boolean chargeMoney = moneyPrice > 0 && economy.isEnabled();
         boolean chargeItem = itemMaterial != null && itemAmount > 0;
 
-        String title = "§8" + type.getDisplayName() + " §f" + manager.describeEffect(type, target)
+        String title = "§8" + manager.getDisplayName(type) + " §f" + manager.describeEffect(type, target)
                 + " §7- " + priceSummary(chargeMoney, chargeItem, moneyPrice, itemAmount, itemMaterial, economy);
 
         UpgradeConfirmHolder holder = new UpgradeConfirmHolder(block, type);
@@ -53,7 +53,7 @@ public final class UpgradeConfirmGui {
             infoLore.add("§7ราคา: §aฟรี");
         }
         inv.setItem(INFO_SLOT, namedItem(block.getType(),
-                "§b§l" + type.getDisplayName() + " §f→ §bLv." + target, infoLore));
+                "§b§l" + manager.getDisplayName(type) + " §f→ §bLv." + target, infoLore));
 
         inv.setItem(CONFIRM_SLOT, namedItem(Material.LIME_STAINED_GLASS_PANE, "§a§lยืนยันอัพเกรด",
                 List.of("§7คลิกเพื่อยืนยันการอัพเกรด")));
