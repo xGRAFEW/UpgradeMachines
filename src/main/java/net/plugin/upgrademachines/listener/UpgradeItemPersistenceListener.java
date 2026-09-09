@@ -72,8 +72,8 @@ public class UpgradeItemPersistenceListener implements Listener {
         ItemMeta meta = item.getItemMeta();
         String effect = manager.describeEffect(type, level);
         int max = manager.getMaxLevel(type);
-        meta.setDisplayName(manager.formatText(manager.getItemNameFormat(), type, level, level, max, effect, ""));
-        meta.setLore(manager.formatTextList(manager.getItemLoreFormat(), type, level, level, max, effect, ""));
+        meta.setDisplayName(manager.formatText(manager.getItemNameFormat(), type, material, level, level, max, effect, ""));
+        meta.setLore(manager.formatTextList(manager.getItemLoreFormat(), type, material, level, level, max, effect, ""));
         meta.getPersistentDataContainer().set(keys.level, PersistentDataType.INTEGER, level);
         item.setItemMeta(meta);
         return item;

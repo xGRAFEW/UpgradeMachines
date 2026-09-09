@@ -30,10 +30,11 @@ public final class UpgradeConfirmGui {
         boolean chargeMoney = moneyPrice > 0 && economy.isEnabled();
         boolean chargeItem = itemMaterial != null && itemAmount > 0;
 
+        Material blockMaterial = block.getType();
         String effect = manager.describeEffect(type, target);
         String price = priceSummary(chargeMoney, chargeItem, moneyPrice, itemAmount, itemMaterial, economy);
 
-        String title = manager.formatText(manager.getGuiTitleFormat(), type, current, target, max, effect, price);
+        String title = manager.formatText(manager.getGuiTitleFormat(), type, blockMaterial, current, target, max, effect, price);
 
         UpgradeConfirmHolder holder = new UpgradeConfirmHolder(block, type);
         Inventory inv = Bukkit.createInventory(holder, SIZE, title);
@@ -42,16 +43,16 @@ public final class UpgradeConfirmGui {
         ItemStack filler = namedItem(manager.getGuiFillerMaterial(), " ", null);
         for (int i = 0; i < SIZE; i++) inv.setItem(i, filler);
 
-        String infoName = manager.formatText(manager.getGuiInfoNameFormat(), type, current, target, max, effect, price);
-        List<String> infoLore = manager.formatTextList(manager.getGuiInfoLoreFormat(), type, current, target, max, effect, price);
-        inv.setItem(INFO_SLOT, namedItem(block.getType(), infoName, infoLore));
+        String infoName = manager.formatText(manager.getGuiInfoNameFormat(), type, blockMaterial, current, target, max, effect, price);
+        List<String> infoLore = manager.formatTextList(manager.getGuiInfoLoreFormat(), type, blockMaterial, current, target, max, effect, price);
+        inv.setItem(INFO_SLOT, namedItem(blockMaterial, infoName, infoLore));
 
-        String confirmName = manager.formatText(manager.getGuiConfirmButtonName(), type, current, target, max, effect, price);
-        List<String> confirmLore = manager.formatTextList(manager.getGuiConfirmButtonLore(), type, current, target, max, effect, price);
+        String confirmName = manager.formatText(manager.getGuiConfirmButtonName(), type, blockMaterial, current, target, max, effect, price);
+        List<String> confirmLore = manager.formatTextList(manager.getGuiConfirmButtonLore(), type, blockMaterial, current, target, max, effect, price);
         inv.setItem(CONFIRM_SLOT, namedItem(manager.getGuiConfirmButtonMaterial(), confirmName, confirmLore));
 
-        String cancelName = manager.formatText(manager.getGuiCancelButtonName(), type, current, target, max, effect, price);
-        List<String> cancelLore = manager.formatTextList(manager.getGuiCancelButtonLore(), type, current, target, max, effect, price);
+        String cancelName = manager.formatText(manager.getGuiCancelButtonName(), type, blockMaterial, current, target, max, effect, price);
+        List<String> cancelLore = manager.formatTextList(manager.getGuiCancelButtonLore(), type, blockMaterial, current, target, max, effect, price);
         inv.setItem(CANCEL_SLOT, namedItem(manager.getGuiCancelButtonMaterial(), cancelName, cancelLore));
 
         return inv;

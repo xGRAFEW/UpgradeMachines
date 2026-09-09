@@ -55,6 +55,17 @@ public class UpgradeManager {
         return plugin.getConfig().getString(type.getConfigKey() + ".display-name", type.getDisplayName());
     }
 
+    /**
+     * Display name for one specific block material - lets machine types that group several
+     * vanilla blocks under one MachineType (e.g. FURNACE covers Furnace/Blast Furnace/Smoker)
+     * name each block differently. Looks up display-names.<MATERIAL> first, falling back to
+     * the shared display-name above when no per-material override is set.
+     */
+    public String getDisplayName(MachineType type, Material material) {
+        String override = plugin.getConfig().getString(type.getConfigKey() + ".display-names." + material.name());
+        return (override == null || override.isBlank()) ? getDisplayName(type) : override;
+    }
+
     /** How many items a single cook cycle produces/consumes at this level (1 = vanilla). */
     public int getFurnaceBatchSize(int level) {
         return getIntFromList("furnace.smelt-batch-size", level, 1);
@@ -118,9 +129,9 @@ public class UpgradeManager {
     // ---- Configurable GUI/item text (config.yml "gui" section) ----
 
     /** Applies &-color codes then substitutes {name}/{level}/{current}/{max}/{effect}/{price} in one template string. */
-    public String formatText(String template, MachineType type, int current, int target, int max, String effect, String price) {
+    public String formatText(String template, MachineType type, Material material, int current, int target, int max, String effect, String price) {
         return ChatColor.translateAlternateColorCodes('&', template)
-                .replace("{name}", getDisplayName(type))
+                .replace("{name}", getDisplayName(type, material))
                 .replace("{level}", String.valueOf(target))
                 .replace("{current}", String.valueOf(current))
                 .replace("{max}", String.valueOf(max))
@@ -129,9 +140,9 @@ public class UpgradeManager {
     }
 
     /** Same as {@link #formatText} but applied to every line of a lore list. */
-    public List<String> formatTextList(List<String> templates, MachineType type, int current, int target, int max, String effect, String price) {
+    public List<String> formatTextList(List<String> templates, MachineType type, Material material, int current, int target, int max, String effect, String price) {
         List<String> result = new ArrayList<>(templates.size());
-        for (String line : templates) result.add(formatText(line, type, current, target, max, effect, price));
+        for (String line : templates) result.add(formatText(line, type, material, current, target, max, effect, price));
         return result;
     }
 

@@ -63,7 +63,7 @@ public class UpgradeCommand implements CommandExecutor, TabCompleter {
         BlockState state = block.getState();
         int lvl = manager.getLevel(state);
         int max = manager.getMaxLevel(type);
-        sender.sendMessage("§b" + manager.getDisplayName(type) + " §7ระดับ: §f" + lvl + "§7/" + max);
+        sender.sendMessage("§b" + manager.getDisplayName(type, block.getType()) + " §7ระดับ: §f" + lvl + "§7/" + max);
         if (lvl > 0) sender.sendMessage("§7ผล: §f" + manager.describeEffect(type, lvl));
 
         if (lvl < max) {
