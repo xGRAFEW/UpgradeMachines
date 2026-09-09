@@ -84,14 +84,30 @@ public class UpgradeManager {
         return getIntFromList("crafter.cooldown-reduction-ticks", level, 0);
     }
 
-    /** Short Thai description of what a level actually does - used in the confirm GUI and on upgraded item lore. */
+    /**
+     * Description of what a level actually does - used in the confirm GUI, /upgrade info, and
+     * on upgraded item lore. The wording is configurable via <configKey>.effect-format (with a
+     * {rate} placeholder for the numeric value); the number itself still comes from the type's
+     * own rate list and can't be reworded away from a plain integer.
+     */
     public String describeEffect(MachineType type, int level) {
+        int rate = switch (type) {
+            case FURNACE -> getFurnaceBatchSize(level);
+            case HOPPER -> 1 + getHopperExtraTransfers(level);
+            case DISPENSER, DROPPER -> 1 + getExtraItems(type, level);
+            case CRAFTER -> 1 + getCrafterExtraCrafts(level);
+        };
+        String format = plugin.getConfig().getString(type.getConfigKey() + ".effect-format", defaultEffectFormat(type));
+        return ChatColor.translateAlternateColorCodes('&', format).replace("{rate}", String.valueOf(rate));
+    }
+
+    private static String defaultEffectFormat(MachineType type) {
         return switch (type) {
-            case FURNACE -> "เผาทีละ: " + getFurnaceBatchSize(level) + " ชิ้น";
-            case HOPPER -> "ส่งทีละ: " + (1 + getHopperExtraTransfers(level)) + " ชิ้น";
-            case DISPENSER -> "ยิงทีละ: " + (1 + getExtraItems(type, level)) + " ชิ้น";
-            case DROPPER -> "ดรอปทีละ: " + (1 + getExtraItems(type, level)) + " ชิ้น";
-            case CRAFTER -> "คราฟทีละ: " + (1 + getCrafterExtraCrafts(level)) + " ครั้ง";
+            case FURNACE -> "เผาทีละ: {rate} ชิ้น";
+            case HOPPER -> "ส่งทีละ: {rate} ชิ้น";
+            case DISPENSER -> "ยิงทีละ: {rate} ชิ้น";
+            case DROPPER -> "ดรอปทีละ: {rate} ชิ้น";
+            case CRAFTER -> "คราฟทีละ: {rate} ครั้ง";
         };
     }
 

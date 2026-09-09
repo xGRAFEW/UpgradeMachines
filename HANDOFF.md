@@ -96,6 +96,16 @@
 - ทดสอบจริงบนเซิร์ฟ Purpur 26.2 test แล้ว — โหลด/enable v1.5.0 สำเร็จไม่มี error (`Done (39.664s)!`), ปิดเซิร์ฟเรียบร้อยหลังทดสอบ
 - **ยังไม่ได้เข้าเกมจริงดูว่าเตาเผา/เตาถลุงแร่/เตาอบรมควันแสดงชื่อแยกกันถูกต้องไหม** (title กล่อง, ไอเทมที่ดรอป) — ที่ยืนยันคือแค่ enable ไม่มี error เท่านั้น
 
+### อัปเดต v1.6.0 (2026-09-10) — ข้อความเอฟเฟค (`effect-format`) ตั้งค่าได้แล้ว
+ผู้ใช้ถามว่าแก้ข้อความเอฟเฟคแต่ละชนิด (เช่น "เผาทีละ: 16 ชิ้น") ได้ไหม — พบว่า `describeEffect()` ยัง hardcode ข้อความเป็น switch statement ในโค้ด ไม่เคยอ่านจาก config เหมือน `display-name`/`gui:` ที่ทำไปก่อนหน้า
+- แก้ `UpgradeManager.describeEffect()`: แยกตัวเลข (`rate`) ออกจากข้อความ — คำนวณ `rate` จาก accessor เดิม (`getFurnaceBatchSize`/`getHopperExtraTransfers`/`getExtraItems`/`getCrafterExtraCrafts`) เหมือนเดิมทุกอย่าง แต่ข้อความรอบตัวเลขอ่านจาก `<configKey>.effect-format` (placeholder `{rate}` ตัวเดียว) แทน string literal เดิม พร้อม `ChatColor.translateAlternateColorCodes('&', ...)` ให้ใส่โค้ดสีในข้อความเอฟเฟคได้ด้วย (ก่อนหน้านี้สีต้องมาจาก template รอบนอกอย่างเดียว)
+- เพิ่ม `defaultEffectFormat(MachineType)` เป็น fallback ตรงกับข้อความเดิมทุกตัวอักษร ถ้า config เก่ายังไม่มี `effect-format` จะได้ผลลัพธ์เหมือน v1.5.0 เป๊ะ ๆ ไม่กระทบของเดิม
+- เพิ่ม `effect-format: "..."` ให้ทุก section ใน `config.yml` (furnace/hopper/dispenser/dropper/crafter) พร้อม comment อธิบาย `{rate}` ที่มาจากไหน
+- อัปเดต README.md หัวข้อ "ตั้งค่า (config.yml)" อธิบาย `effect-format` + placeholder `{rate}`
+- bump เวอร์ชันเป็น 1.6.0 (`pom.xml` + `plugin.yml`)
+- ทดสอบจริงบนเซิร์ฟ Purpur 26.2 test แล้ว — โหลด/enable v1.6.0 สำเร็จไม่มี error (`Done (43.727s)!`), ปิดเซิร์ฟเรียบร้อยหลังทดสอบ (เซิร์ฟยังใช้ `config.yml` เก่าที่ deploy ไว้จาก v1.5.0 ที่ไม่มี `effect-format` เลย ก็ยัง enable ผ่านปกติเพราะมี fallback — ยืนยัน backward-compat จริง)
+- **ยังไม่ได้เข้าเกมจริงดูว่าแก้ `effect-format` แล้วข้อความเปลี่ยนถูกจุดจริงไหม** — ที่ยืนยันคือแค่ enable ไม่มี error เท่านั้น
+
 ### หมายเหตุการทดสอบรอบนี้ (2026-09-08 16:0x-16:15)
 - ตอนเริ่มงาน มีเซิร์ฟทดสอบตัวเดิม (PID เดิม) ค้างรันอยู่แล้วตั้งแต่ 13:13 (ไม่มีผู้เล่นออนไลน์เลยตลอด — เช็คจาก log ไม่มี "joined the game") จึงสั่ง `taskkill /PID <pid>` (ไม่ใช้ `/F`) เพื่อหยุดก่อนรันใหม่พร้อม jar ตัวใหม่
 - **ข้อสังเกต**: `taskkill` (ไม่ /F) บนเครื่องนี้ไม่ทำให้ log ขึ้นข้อความ "Stopping the server"/"Saving worlds" เลยทั้ง 2 รอบที่ทดสอบ — เป็นไปได้ว่า shutdown hook ของ Paper ไม่ได้ถูกเรียกแบบ graceful เต็มรูปแบบบน Windows ผ่านวิธีนี้ (ไม่มี error/corruption ให้เห็นหลังสตาร์ทใหม่ก็จริง แต่ควรระวัง) — ถ้าจะให้ปลอดภัยกว่านี้ในอนาคต ควรเปิด RCON (`enable-rcon=true` ใน `server.properties`, ตอนนี้ปิดอยู่) แล้วสั่ง `stop` ผ่าน RCON แทน
