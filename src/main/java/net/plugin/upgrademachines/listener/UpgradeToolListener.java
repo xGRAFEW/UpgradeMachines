@@ -54,7 +54,7 @@ public class UpgradeToolListener implements Listener {
         int current = manager.getLevel(state);
         int max = manager.getMaxLevel(type);
         if (current >= max) {
-            player.sendMessage("§eบล็อกนี้อยู่ที่ระดับสูงสุดแล้ว (Lv. " + current + "/" + max + ")");
+            player.sendMessage("§eบล็อกนี้อยู่ที่ระดับสูงสุดแล้ว (Lv. " + UpgradeManager.toRoman(current) + "/" + UpgradeManager.toRoman(max) + ")");
             return;
         }
 
