@@ -9,6 +9,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Reads/writes the upgrade level straight onto the block's own
@@ -110,7 +112,27 @@ public class UpgradeManager {
             case CRAFTER -> 1 + getCrafterExtraCrafts(level);
         };
         String format = plugin.getConfig().getString(type.getConfigKey() + ".effect-format", defaultEffectFormat(type));
-        return ChatColor.translateAlternateColorCodes('&', format).replace("{rate}", String.valueOf(rate));
+        return translateColors(format).replace("{rate}", String.valueOf(rate));
+    }
+
+    private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
+
+    /** Applies &-color codes, including hex colors written as &#RRGGBB (e.g. "&#4D60FFHello"). */
+    private static String translateColors(String text) {
+        Matcher matcher = HEX_COLOR_PATTERN.matcher(text);
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find()) {
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(toLegacyHex(matcher.group(1))));
+        }
+        matcher.appendTail(sb);
+        return ChatColor.translateAlternateColorCodes('&', sb.toString());
+    }
+
+    /** Builds the vanilla legacy hex-color sequence (§x§R§R§G§G§B§B) for a 6-digit hex string. */
+    private static String toLegacyHex(String hex) {
+        StringBuilder sb = new StringBuilder().append(ChatColor.COLOR_CHAR).append('x');
+        for (char c : hex.toCharArray()) sb.append(ChatColor.COLOR_CHAR).append(c);
+        return sb.toString();
     }
 
     private static String defaultEffectFormat(MachineType type) {
@@ -157,13 +179,15 @@ public class UpgradeManager {
     // ---- Configurable GUI/item text (config.yml "gui" section) ----
 
     /**
-     * Applies &-color codes then substitutes {name}/{level}/{current}/{max}/{effect}/{price}
-     * (plain Arabic numbers) plus {level-roman}/{current-roman}/{max-roman} (Roman numeral
-     * versions, e.g. "IV" instead of "4" - level 0 has no Roman numeral so it prints as "0")
-     * in one template string.
+     * Substitutes {name}/{level}/{current}/{max}/{effect}/{price} (plain Arabic numbers) plus
+     * {level-roman}/{current-roman}/{max-roman} (Roman numeral versions, e.g. "IV" instead of
+     * "4" - level 0 has no Roman numeral so it prints as "0") into the template, then applies
+     * &-color codes (including hex colors written as &#RRGGBB) to the whole result - done in
+     * this order, not before, so colors embedded in a configured display-name (via {name}) get
+     * translated too, not just colors in the surrounding template.
      */
     public String formatText(String template, MachineType type, Material material, int current, int target, int max, String effect, String price) {
-        return ChatColor.translateAlternateColorCodes('&', template)
+        String result = template
                 .replace("{name}", getDisplayName(type, material, target))
                 .replace("{level-roman}", toRoman(target))
                 .replace("{current-roman}", toRoman(current))
@@ -173,6 +197,7 @@ public class UpgradeManager {
                 .replace("{max}", String.valueOf(max))
                 .replace("{effect}", effect == null ? "" : effect)
                 .replace("{price}", price == null ? "" : price);
+        return translateColors(result);
     }
 
     private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
