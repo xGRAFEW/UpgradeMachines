@@ -98,6 +98,16 @@ public class UpgradeManager {
         return getIntFromList("crafter.cooldown-reduction-ticks", level, 0);
     }
 
+    /** The raw numeric rate value for a level (batch size, extra transfers+1, etc.) - the same number {rate} resolves to everywhere. */
+    public int getRate(MachineType type, int level) {
+        return switch (type) {
+            case FURNACE -> getFurnaceBatchSize(level);
+            case HOPPER -> 1 + getHopperExtraTransfers(level);
+            case DISPENSER, DROPPER -> 1 + getExtraItems(type, level);
+            case CRAFTER -> 1 + getCrafterExtraCrafts(level);
+        };
+    }
+
     /**
      * Description of what a level actually does - used in the confirm GUI, /upgrade info, and
      * on upgraded item lore. The wording is configurable via <configKey>.effect-format (with a
@@ -105,14 +115,8 @@ public class UpgradeManager {
      * own rate list and can't be reworded away from a plain integer.
      */
     public String describeEffect(MachineType type, int level) {
-        int rate = switch (type) {
-            case FURNACE -> getFurnaceBatchSize(level);
-            case HOPPER -> 1 + getHopperExtraTransfers(level);
-            case DISPENSER, DROPPER -> 1 + getExtraItems(type, level);
-            case CRAFTER -> 1 + getCrafterExtraCrafts(level);
-        };
         String format = plugin.getConfig().getString(type.getConfigKey() + ".effect-format", defaultEffectFormat(type));
-        return translateColors(format).replace("{rate}", String.valueOf(rate));
+        return translateColors(format).replace("{rate}", String.valueOf(getRate(type, level)));
     }
 
     private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
@@ -179,12 +183,14 @@ public class UpgradeManager {
     // ---- Configurable GUI/item text (config.yml "gui" section) ----
 
     /**
-     * Substitutes {name}/{level}/{current}/{max}/{effect}/{price} (plain Arabic numbers) plus
-     * {level-roman}/{current-roman}/{max-roman} (Roman numeral versions, e.g. "IV" instead of
-     * "4" - level 0 has no Roman numeral so it prints as "0") into the template, then applies
+     * Substitutes {name}/{level}/{current}/{max}/{rate}/{effect}/{price} (plain Arabic numbers)
+     * plus {level-roman}/{current-roman}/{max-roman} (Roman numeral versions, e.g. "IV" instead
+     * of "4" - level 0 has no Roman numeral so it prints as "0") into the template, then applies
      * &-color codes (including hex colors written as &#RRGGBB) to the whole result - done in
      * this order, not before, so colors embedded in a configured display-name (via {name}) get
-     * translated too, not just colors in the surrounding template.
+     * translated too, not just colors in the surrounding template. {rate} is the same bare
+     * number {effect}'s wording is built around (via effect-format) - handy when a template
+     * wants just the number without effect-format's surrounding text.
      */
     public String formatText(String template, MachineType type, Material material, int current, int target, int max, String effect, String price) {
         String result = template
@@ -195,6 +201,7 @@ public class UpgradeManager {
                 .replace("{level}", String.valueOf(target))
                 .replace("{current}", String.valueOf(current))
                 .replace("{max}", String.valueOf(max))
+                .replace("{rate}", String.valueOf(getRate(type, target)))
                 .replace("{effect}", effect == null ? "" : effect)
                 .replace("{price}", price == null ? "" : price);
         return translateColors(result);
