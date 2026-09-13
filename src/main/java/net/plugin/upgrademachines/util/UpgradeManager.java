@@ -195,9 +195,15 @@ public class UpgradeManager {
 
     // ---- Configurable GUI/item text (config.yml "gui" section) ----
 
-    /** Whether sneak+right-click should use the action-bar quick-confirm flow instead of opening the inventory GUI - see gui.style in config.yml. */
-    public boolean isActionBarStyle() {
-        return "actionbar".equalsIgnoreCase(plugin.getConfig().getString("gui.style", "inventory"));
+    /** The three sneak+right-click confirm flows a machine can use - see gui.style in config.yml. */
+    public enum ConfirmStyle { INVENTORY, ACTIONBAR, DIALOG }
+
+    /** Which confirm flow sneak+right-click should use. Unrecognized/missing values fall back to INVENTORY (the original behavior). */
+    public ConfirmStyle getConfirmStyle() {
+        String raw = plugin.getConfig().getString("gui.style", "inventory");
+        if ("actionbar".equalsIgnoreCase(raw)) return ConfirmStyle.ACTIONBAR;
+        if ("dialog".equalsIgnoreCase(raw)) return ConfirmStyle.DIALOG;
+        return ConfirmStyle.INVENTORY;
     }
 
     /** Action-bar text shown on the first sneak+right-click in actionbar style - a second one within the timeout confirms. Same placeholders as everything else. */
@@ -209,6 +215,27 @@ public class UpgradeManager {
     /** How long (seconds) a pending actionbar confirmation stays valid before a second click starts a fresh prompt instead. */
     public int getActionBarTimeoutSeconds() {
         return Math.max(1, plugin.getConfig().getInt("gui.actionbar.timeout-seconds", 6));
+    }
+
+    /** Title of the native Dialog screen (style: "dialog") - a real client-rendered box with buttons, no resource pack needed. */
+    public String getDialogTitleFormat() {
+        return plugin.getConfig().getString("gui.dialog.title-format", "&8อัพเกรด {name}");
+    }
+
+    /** Body lines of the Dialog screen, stacked top to bottom. */
+    public List<String> getDialogBodyFormat() {
+        return getStringListOrDefault("gui.dialog.body", List.of(
+                "ระดับ: {current-roman} → {level-roman}/{max-roman}",
+                "ผล: {effect}",
+                "ราคา: {price}"));
+    }
+
+    public String getDialogConfirmLabel() {
+        return plugin.getConfig().getString("gui.dialog.confirm-label", "&a&lยืนยันอัพเกรด");
+    }
+
+    public String getDialogCancelLabel() {
+        return plugin.getConfig().getString("gui.dialog.cancel-label", "&c&lยกเลิก");
     }
 
     /**
