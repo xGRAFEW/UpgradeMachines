@@ -3,6 +3,15 @@
 บันทึกความคืบหน้าล่าสุดของโปรเจกต์ `UpgradeMachines` — อ่านไฟล์นี้ก่อนเริ่ม session ใหม่เสมอ
 (อัปเดตล่าสุด: 2026-09-13)
 
+### อัปเดต v1.9.0 (2026-09-13) — เพิ่ม `{rate}` เป็น placeholder ใช้ได้ทุกที่
+ผู้ใช้ส่งภาพหน้าจอ item tooltip โชว์ `Hopper I → {rate}` (ตัวหนังสือ `{rate}` ไม่ถูกแทนที่เลย) — พบว่า `{rate}` เดิมทำงานแค่**ภายใน** `effect-format` เท่านั้น (ใช้ประกอบเป็น `{effect}`) แต่ `formatText()` ที่ใช้กับ `item-name-format`/`gui.*` ทั้งหมดไม่รู้จัก `{rate}` เลย ทำให้เอาไปใส่ตรง ๆ ใน template อื่นแล้วโชว์เป็นตัวอักษรดิบ (จากภาพ ผู้ใช้มีเซิร์ฟ/config ของตัวเองแยกต่างหากที่ตั้งชื่อเครื่องเป็นภาษาอังกฤษ ไม่ใช่เซิร์ฟทดสอบที่ session นี้ใช้ - `config.yml` บนเซิร์ฟทดสอบยังเป็นแบบเก่าไม่มี `gui:` section เหมือนเดิม)
+- แยก logic คำนวณตัวเลข rate ออกจาก `describeEffect()` เป็น method ใหม่ `UpgradeManager.getRate(MachineType, level)` (public) แล้วให้ `describeEffect()` เรียกใช้แทน
+- เพิ่ม `.replace("{rate}", String.valueOf(getRate(type, target)))` เข้าไปใน `formatText()` เหมือน placeholder อื่น ๆ ทำให้ `{rate}` ใช้ได้ทุกที่ที่ `formatText`/`formatTextList` ถูกเรียก (title/info-item/confirm-button/cancel-button/item-name-format/item-lore-format) ไม่ใช่แค่ใน `effect-format` อีกต่อไป
+- อัปเดต README.md เพิ่มแถว `{rate}` ในตาราง placeholder อธิบายว่าต่างจาก `{effect}` ยังไง (ตัวเลขดิบ ไม่มีข้อความรอบข้าง)
+- bump เวอร์ชันเป็น 1.9.0 (placeholder ใหม่)
+- ทดสอบจริงบนเซิร์ฟ Purpur 26.2 test แล้ว — โหลด/enable v1.9.0 สำเร็จไม่มี error (`Done (34.956s)!`)
+- **ยังไม่ได้เข้าเกมจริงยืนยันว่า `{rate}` ใน `item-name-format` แสดงตัวเลขถูกต้องไหม** (เซิร์ฟทดสอบไม่มี `gui:` section ให้ทดสอบ ผู้ใช้ต้องลองในเซิร์ฟของตัวเองที่ตั้ง `gui.item-name-format` ไว้)
+
 ### อัปเดต v1.8.1 (2026-09-13) — แก้ชื่อไอเทมไม่ติดตอนทุบในโหมด Creative
 ผู้ใช้รายงานว่า: วางบล็อกใหม่ → อัพเกรดเป็น Lv.1 → ทุบ → ไอเทมที่ได้ยังเป็นชื่อวานิลลาอยู่ ต้อง "ทุบวางใหม่" ถึงจะเปลี่ยนชื่อ ถามด้วย AskUserQuestion 2 ข้อ (ลำดับขั้นตอนเป๊ะ ๆ + gamemode) ผู้ใช้ตอบว่าทดสอบใน **Creative** และ "หลังอัพเกรดต้องทุบไอเทมที่อัพเกรดก่อนชื่อไอเทมจึงจะเปลี่ยน"
 - **สาเหตุ**: วานิลลา Creative mode ทุบบล็อกด้วยการคลิกซ้ายปกติ (ไม่ใช่ pick block) จะ**ไม่ดรอปไอเทมเลย** (`BlockBreakEvent#isDropItems() == false`) — โค้ดเดิมใน `UpgradeItemPersistenceListener.onBreak()` เช็ค `if (!event.isDropItems()) return;` เป็นด่านแรกเลย ทำให้ตอน Creative โค้ดเปลี่ยนชื่อ/ฝังระดับไม่ทำงานเลยตั้งแต่ v1.2.0 (ระดับอัพเกรดหายไปเงียบ ๆ ไม่มีไอเทมออกมาเลยด้วยซ้ำจากมุมมองปลั๊กอินนี้ - ไอเทมที่ผู้ใช้เห็นได้มาจากทางอื่น เช่น pick block ที่ปลั๊กอินนี้ไม่มีทางดักได้)
