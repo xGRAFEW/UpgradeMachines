@@ -3,9 +3,11 @@ package net.plugin.upgrademachines.listener;
 import net.plugin.upgrademachines.util.MachineType;
 import net.plugin.upgrademachines.util.UpgradeKeys;
 import net.plugin.upgrademachines.util.UpgradeManager;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -21,7 +23,9 @@ import java.util.List;
  * breaking an upgraded block drops a renamed item (name + lore show its
  * current effect) with the level embedded in the item's own
  * PersistentDataContainer, and placing that item back applies the level
- * straight onto the new block.
+ * straight onto the new block. In Creative mode, where breaking normally
+ * drops nothing at all, the renamed item is given straight to the player's
+ * inventory instead so the level isn't silently lost.
  *
  * Limitation: only covers normal player block breaking (BlockBreakEvent) -
  * blocks destroyed by explosions or other means drop vanilla items and lose
@@ -39,8 +43,6 @@ public class UpgradeItemPersistenceListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
-        if (!event.isDropItems()) return;
-
         Block block = event.getBlock();
         MachineType type = MachineType.fromBlock(block.getType());
         if (type == null) return;
@@ -49,8 +51,20 @@ public class UpgradeItemPersistenceListener implements Listener {
         int level = manager.getLevel(state);
         if (level <= 0) return;
 
-        event.setDropItems(false);
-        block.getWorld().dropItemNaturally(block.getLocation().add(0.5, 0.5, 0.5), createUpgradedItem(block.getType(), type, level));
+        Player player = event.getPlayer();
+        boolean creative = player.getGameMode() == GameMode.CREATIVE;
+        // Survival with the wrong tool (e.g. no pickaxe on a hopper) drops nothing in vanilla
+        // too - leave that alone. Creative always drops nothing by default even with upgrade
+        // levels on the block, which would otherwise silently throw the level away.
+        if (!event.isDropItems() && !creative) return;
+
+        ItemStack item = createUpgradedItem(block.getType(), type, level);
+        if (event.isDropItems()) {
+            event.setDropItems(false);
+            block.getWorld().dropItemNaturally(block.getLocation().add(0.5, 0.5, 0.5), item);
+        } else {
+            player.getInventory().addItem(item);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
