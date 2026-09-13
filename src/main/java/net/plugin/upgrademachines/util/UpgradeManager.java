@@ -2,6 +2,7 @@ package net.plugin.upgrademachines.util;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Nameable;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.persistence.PersistentDataType;
@@ -34,7 +35,16 @@ public class UpgradeManager {
         return lvl == null ? 0 : lvl;
     }
 
-    /** Sets (or clears, if 0) the upgrade level on the given block state. Returns the clamped level applied. */
+    /**
+     * Sets (or clears, if 0) the upgrade level on the given block state. Returns the clamped
+     * level applied. Also sets the block's own vanilla custom name (the same one used on a
+     * dropped/held item - see getItemDisplayName) via the Nameable interface every
+     * Furnace/Hopper/Dispenser/Dropper/Crafter implements, so the block's own inventory title
+     * (e.g. opening the Crafter to craft) updates immediately - without this, upgrading in
+     * place left the container's title showing its old/vanilla name until the block was broken
+     * and placed again (breaking is what indirectly sets it today, via the renamed item's
+     * display name carrying over to the newly placed block, a vanilla mechanic).
+     */
     public int setLevel(BlockState state, int level, MachineType type) {
         if (!(state instanceof TileState tile)) return 0;
         int max = getMaxLevel(type);
@@ -43,6 +53,9 @@ public class UpgradeManager {
             tile.getPersistentDataContainer().remove(keys.level);
         } else {
             tile.getPersistentDataContainer().set(keys.level, PersistentDataType.INTEGER, clamped);
+        }
+        if (tile instanceof Nameable nameable) {
+            nameable.setCustomName(clamped > 0 ? getItemDisplayName(type, state.getType(), clamped) : null);
         }
         tile.update();
         return clamped;
@@ -279,6 +292,13 @@ public class UpgradeManager {
 
     public List<String> getItemLoreFormat() {
         return getStringListOrDefault("gui.item-lore-format", List.of("&7{effect}"));
+    }
+
+    /** The fully formatted name for a level, built from item-name-format - shared by the dropped item and the block's own custom name. */
+    public String getItemDisplayName(MachineType type, Material material, int level) {
+        String effect = describeEffect(type, level);
+        int max = getMaxLevel(type);
+        return formatText(getItemNameFormat(), type, material, level, level, max, effect, "");
     }
 
     private List<String> getStringListOrDefault(String path, List<String> def) {
