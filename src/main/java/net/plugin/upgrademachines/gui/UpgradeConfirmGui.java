@@ -32,7 +32,7 @@ public final class UpgradeConfirmGui {
 
         Material blockMaterial = block.getType();
         String effect = manager.describeEffect(type, target);
-        String price = priceSummary(chargeMoney, chargeItem, moneyPrice, itemAmount, itemMaterial, economy, manager);
+        String price = manager.formatPrice(chargeMoney, chargeItem, moneyPrice, itemAmount, itemMaterial, economy);
 
         String title = manager.formatText(manager.getGuiTitleFormat(), type, blockMaterial, current, target, max, effect, price);
 
@@ -56,21 +56,6 @@ public final class UpgradeConfirmGui {
         inv.setItem(CANCEL_SLOT, namedItem(manager.getGuiCancelButtonMaterial(), cancelName, cancelLore));
 
         return inv;
-    }
-
-    /**
-     * Builds the {price} value with no forced color of its own (besides the free/separator text,
-     * which are configurable via gui.price-free/gui.price-separator) - so whatever color a
-     * template puts right before {price} actually applies, instead of always coming out white.
-     */
-    private static String priceSummary(boolean chargeMoney, boolean chargeItem, double moneyPrice,
-                                        int itemAmount, Material itemMaterial, EconomyHook economy, UpgradeManager manager) {
-        if (!chargeMoney && !chargeItem) return manager.getPriceFreeText();
-        StringBuilder summary = new StringBuilder();
-        if (chargeMoney) summary.append(economy.format(moneyPrice));
-        if (chargeMoney && chargeItem) summary.append(manager.getPriceSeparator());
-        if (chargeItem) summary.append(itemAmount).append("x ").append(itemMaterial.name());
-        return summary.toString();
     }
 
     private static ItemStack namedItem(Material material, String name, List<String> lore) {

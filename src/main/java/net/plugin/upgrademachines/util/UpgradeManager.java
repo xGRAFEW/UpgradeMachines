@@ -195,6 +195,22 @@ public class UpgradeManager {
 
     // ---- Configurable GUI/item text (config.yml "gui" section) ----
 
+    /** Whether sneak+right-click should use the action-bar quick-confirm flow instead of opening the inventory GUI - see gui.style in config.yml. */
+    public boolean isActionBarStyle() {
+        return "actionbar".equalsIgnoreCase(plugin.getConfig().getString("gui.style", "inventory"));
+    }
+
+    /** Action-bar text shown on the first sneak+right-click in actionbar style - a second one within the timeout confirms. Same placeholders as everything else. */
+    public String getActionBarPromptFormat() {
+        return plugin.getConfig().getString("gui.actionbar.prompt-format",
+                "&e→ &fคลิกขวาอีกครั้งเพื่ออัปเกรดเป็น: &a{level-roman} &fในราคา: &6{price}");
+    }
+
+    /** How long (seconds) a pending actionbar confirmation stays valid before a second click starts a fresh prompt instead. */
+    public int getActionBarTimeoutSeconds() {
+        return Math.max(1, plugin.getConfig().getInt("gui.actionbar.timeout-seconds", 6));
+    }
+
     /**
      * Substitutes {name}/{level}/{current}/{max}/{rate}/{effect}/{price} (plain Arabic numbers)
      * plus {level-roman}/{current-roman}/{max-roman} (Roman numeral versions, e.g. "IV" instead
@@ -297,6 +313,16 @@ public class UpgradeManager {
     /** Text placed between the money and item parts of {price} when both are charged. */
     public String getPriceSeparator() {
         return translateColors(plugin.getConfig().getString("gui.price-separator", "&7 + "));
+    }
+
+    /** Builds the {price} value (money + item cost summary, or the free text) - shared by every confirm UI. */
+    public String formatPrice(boolean chargeMoney, boolean chargeItem, double moneyPrice, int itemAmount, Material itemMaterial, EconomyHook economy) {
+        if (!chargeMoney && !chargeItem) return getPriceFreeText();
+        StringBuilder summary = new StringBuilder();
+        if (chargeMoney) summary.append(economy.format(moneyPrice));
+        if (chargeMoney && chargeItem) summary.append(getPriceSeparator());
+        if (chargeItem) summary.append(itemAmount).append("x ").append(itemMaterial.name());
+        return summary.toString();
     }
 
     /** Name format for the item dropped when breaking an upgraded block (also used when applying it back on place). */
