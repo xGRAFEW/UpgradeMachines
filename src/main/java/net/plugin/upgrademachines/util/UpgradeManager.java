@@ -135,7 +135,7 @@ public class UpgradeManager {
     private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
 
     /** Applies &-color codes, including hex colors written as &#RRGGBB (e.g. "&#4D60FFHello"). */
-    private static String translateColors(String text) {
+    public static String translateColors(String text) {
         Matcher matcher = HEX_COLOR_PATTERN.matcher(text);
         StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
@@ -283,6 +283,20 @@ public class UpgradeManager {
 
     public Material getGuiFillerMaterial() {
         return getMaterialOrDefault("gui.filler.material", Material.GRAY_STAINED_GLASS_PANE);
+    }
+
+    /**
+     * Text used for {price} when there's nothing to pay. Colorized on its own (rather than
+     * forcing a color inside the {price} value itself) so whatever color precedes {price} in a
+     * template only applies when there IS a price - free stays its own distinct color.
+     */
+    public String getPriceFreeText() {
+        return translateColors(plugin.getConfig().getString("gui.price-free", "&aฟรี"));
+    }
+
+    /** Text placed between the money and item parts of {price} when both are charged. */
+    public String getPriceSeparator() {
+        return translateColors(plugin.getConfig().getString("gui.price-separator", "&7 + "));
     }
 
     /** Name format for the item dropped when breaking an upgraded block (also used when applying it back on place). */
