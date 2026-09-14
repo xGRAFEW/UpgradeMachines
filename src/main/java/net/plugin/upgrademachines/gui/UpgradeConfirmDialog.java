@@ -58,13 +58,12 @@ public final class UpgradeConfirmDialog {
         // Single-use: once the player clicks either button the callback can't fire again for this dialog instance.
         ClickCallback.Options singleUse = ClickCallback.Options.builder().uses(1).build();
 
-        int buttonWidth = manager.getDialogButtonWidth();
         ActionButton confirmButton = ActionButton.builder(confirmLabel)
-                .width(buttonWidth)
+                .width(manager.getDialogConfirmButtonWidth())
                 .action(DialogAction.customClick((view, audience) -> UpgradeExecutor.upgrade(player, block, type, manager, economy), singleUse))
                 .build();
         ActionButton cancelButton = ActionButton.builder(cancelLabel)
-                .width(buttonWidth)
+                .width(manager.getDialogCancelButtonWidth())
                 .action(DialogAction.customClick((view, audience) -> player.sendMessage("§7ยกเลิกการอัพเกรดแล้ว"), singleUse))
                 .build();
 

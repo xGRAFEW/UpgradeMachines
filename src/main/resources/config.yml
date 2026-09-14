@@ -67,8 +67,9 @@ gui:
     #   stacked      - ปุ่มเรียงติดกันแนวตั้ง (ยืนยันบน ยกเลิกใต้ ติดกัน)
     #   separated    - ยืนยันอยู่บน (ค่า default) ยกเลิกแยกลงไปด้านล่างสุด ห่างออกมาต่างหาก
     button-layout: "separated"
-    # ความกว้างปุ่ม (หน่วยพิกเซลในกล่อง Dialog) - ถ้าแก้ confirm-label/cancel-label ให้ยาวขึ้นแล้วข้อความถูกตัด ให้เพิ่มค่านี้
-    button-width: 200
+    # ความกว้างปุ่ม (หน่วยพิกเซลในกล่อง Dialog) - แยกค่ากันได้ระหว่าง 2 ปุ่ม ถ้าแก้ label ให้ยาวขึ้นแล้วข้อความถูกตัด ให้เพิ่มค่านั้น
+    confirm-button-width: 200
+    cancel-button-width: 200
 
   # แถบหัวกล่อง (title bar, เฉพาะ style: "inventory") - แสดงบรรทัดเดียว ยาวเกินไคลเอนต์จะตัด/scroll เอง
   title-format: "&8{name} &f{effect} &7- {price}"

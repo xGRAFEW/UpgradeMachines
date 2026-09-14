@@ -249,9 +249,14 @@ public class UpgradeManager {
         return DialogButtonLayout.SEPARATED;
     }
 
-    /** Pixel width of the confirm/cancel buttons - widen this in config.yml if a longer confirm-label/cancel-label gets clipped. */
-    public int getDialogButtonWidth() {
-        return Math.max(1, plugin.getConfig().getInt("gui.dialog.button-width", 200));
+    /** Pixel width of the confirm button - widen this in config.yml if confirm-label gets clipped. */
+    public int getDialogConfirmButtonWidth() {
+        return Math.max(1, plugin.getConfig().getInt("gui.dialog.confirm-button-width", 200));
+    }
+
+    /** Pixel width of the cancel button - widen this in config.yml if cancel-label gets clipped. Independent of the confirm button's width. */
+    public int getDialogCancelButtonWidth() {
+        return Math.max(1, plugin.getConfig().getInt("gui.dialog.cancel-button-width", 200));
     }
 
     /**
