@@ -73,12 +73,13 @@ public final class UpgradeConfirmDialog {
                 .canCloseWithEscape(true)
                 .build();
 
-        // 1 column stacks the buttons vertically (confirm on top, cancel under it) instead of
-        // side by side like DialogType.confirmation() forces - matches what was asked for:
-        // confirm front-and-center with cancel right below.
+        // Confirm is the sole entry in the main action grid (stays where it was); cancel goes in
+        // exitAction, which Minecraft renders as a separate button below the main grid instead
+        // of stacked right under it - matches what was asked for: confirm in place, cancel moved
+        // further down on its own.
         Dialog dialog = Dialog.create(factory -> factory.empty()
                 .base(base)
-                .type(DialogType.multiAction(List.of(confirmButton, cancelButton)).columns(1).build()));
+                .type(DialogType.multiAction(List.of(confirmButton)).exitAction(cancelButton).columns(1).build()));
 
         player.showDialog(dialog);
     }
