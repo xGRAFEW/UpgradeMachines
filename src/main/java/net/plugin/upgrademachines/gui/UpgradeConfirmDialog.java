@@ -58,10 +58,13 @@ public final class UpgradeConfirmDialog {
         // Single-use: once the player clicks either button the callback can't fire again for this dialog instance.
         ClickCallback.Options singleUse = ClickCallback.Options.builder().uses(1).build();
 
+        // Wider than the default button width so the extra summary line (added below) fits.
         ActionButton confirmButton = ActionButton.builder(confirmLabel)
+                .width(300)
                 .action(DialogAction.customClick((view, audience) -> UpgradeExecutor.upgrade(player, block, type, manager, economy), singleUse))
                 .build();
         ActionButton cancelButton = ActionButton.builder(cancelLabel)
+                .width(300)
                 .action(DialogAction.customClick((view, audience) -> player.sendMessage("§7ยกเลิกการอัพเกรดแล้ว"), singleUse))
                 .build();
 
@@ -70,9 +73,12 @@ public final class UpgradeConfirmDialog {
                 .canCloseWithEscape(true)
                 .build();
 
+        // 1 column stacks the buttons vertically (confirm on top, cancel under it) instead of
+        // side by side like DialogType.confirmation() forces - matches what was asked for:
+        // confirm front-and-center with cancel right below.
         Dialog dialog = Dialog.create(factory -> factory.empty()
                 .base(base)
-                .type(DialogType.confirmation(confirmButton, cancelButton)));
+                .type(DialogType.multiAction(List.of(confirmButton, cancelButton)).columns(1).build()));
 
         player.showDialog(dialog);
     }

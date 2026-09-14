@@ -59,7 +59,8 @@ gui:
       - "&7ระดับ: &f{current-roman} &7→ &a{level-roman}&7/{max-roman}"
       - "&7ผล: &f{effect}"
       - "&7ราคา: &f{price}"
-    confirm-label: "&a&lยืนยันอัพเกรด"
+    # ปุ่มเรียงแนวตั้ง (ยืนยันอยู่บน ยกเลิกอยู่ใต้) - ปุ่มยืนยันมี 2 บรรทัด (\n) แสดงสรุปสั้น ๆ ไว้ด้วย
+    confirm-label: "&a&lยืนยันอัพเกรด\n&7Lv.{level-roman} - {price}"
     cancel-label: "&c&lยกเลิก"
 
   # แถบหัวกล่อง (title bar, เฉพาะ style: "inventory") - แสดงบรรทัดเดียว ยาวเกินไคลเอนต์จะตัด/scroll เอง

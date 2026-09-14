@@ -231,7 +231,7 @@ public class UpgradeManager {
     }
 
     public String getDialogConfirmLabel() {
-        return plugin.getConfig().getString("gui.dialog.confirm-label", "&a&lยืนยันอัพเกรด");
+        return plugin.getConfig().getString("gui.dialog.confirm-label", "&a&lยืนยันอัพเกรด\n&7Lv.{level-roman} - {price}");
     }
 
     public String getDialogCancelLabel() {
