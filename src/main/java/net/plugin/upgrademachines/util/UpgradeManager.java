@@ -238,6 +238,22 @@ public class UpgradeManager {
         return plugin.getConfig().getString("gui.dialog.cancel-label", "&c&lยกเลิก");
     }
 
+    /** How the confirm/cancel buttons are arranged on the Dialog screen - see gui.dialog.button-layout in config.yml. */
+    public enum DialogButtonLayout { SIDE_BY_SIDE, STACKED, SEPARATED }
+
+    /** Unrecognized/missing values fall back to SEPARATED (confirm in the main area, cancel set apart below it). */
+    public DialogButtonLayout getDialogButtonLayout() {
+        String raw = plugin.getConfig().getString("gui.dialog.button-layout", "separated");
+        if ("side-by-side".equalsIgnoreCase(raw)) return DialogButtonLayout.SIDE_BY_SIDE;
+        if ("stacked".equalsIgnoreCase(raw)) return DialogButtonLayout.STACKED;
+        return DialogButtonLayout.SEPARATED;
+    }
+
+    /** Pixel width of the confirm/cancel buttons - widen this in config.yml if a longer confirm-label/cancel-label gets clipped. */
+    public int getDialogButtonWidth() {
+        return Math.max(1, plugin.getConfig().getInt("gui.dialog.button-width", 200));
+    }
+
     /**
      * Substitutes {name}/{level}/{current}/{max}/{rate}/{effect}/{price} (plain Arabic numbers)
      * plus {level-roman}/{current-roman}/{max-roman} (Roman numeral versions, e.g. "IV" instead

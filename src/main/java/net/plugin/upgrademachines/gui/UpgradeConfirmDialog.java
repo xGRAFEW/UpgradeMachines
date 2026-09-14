@@ -58,13 +58,13 @@ public final class UpgradeConfirmDialog {
         // Single-use: once the player clicks either button the callback can't fire again for this dialog instance.
         ClickCallback.Options singleUse = ClickCallback.Options.builder().uses(1).build();
 
-        // Wider than the default button width so the extra summary line (added below) fits.
+        int buttonWidth = manager.getDialogButtonWidth();
         ActionButton confirmButton = ActionButton.builder(confirmLabel)
-                .width(300)
+                .width(buttonWidth)
                 .action(DialogAction.customClick((view, audience) -> UpgradeExecutor.upgrade(player, block, type, manager, economy), singleUse))
                 .build();
         ActionButton cancelButton = ActionButton.builder(cancelLabel)
-                .width(300)
+                .width(buttonWidth)
                 .action(DialogAction.customClick((view, audience) -> player.sendMessage("§7ยกเลิกการอัพเกรดแล้ว"), singleUse))
                 .build();
 
@@ -73,13 +73,18 @@ public final class UpgradeConfirmDialog {
                 .canCloseWithEscape(true)
                 .build();
 
-        // Confirm is the sole entry in the main action grid (stays where it was); cancel goes in
-        // exitAction, which Minecraft renders as a separate button below the main grid instead
-        // of stacked right under it - matches what was asked for: confirm in place, cancel moved
-        // further down on its own.
+        // gui.dialog.button-layout picks between every arrangement tried so far: vanilla's
+        // fixed side-by-side confirmation(), both buttons stacked in the main grid, or (default)
+        // confirm alone in the main grid with cancel set apart via exitAction.
+        DialogType dialogType = switch (manager.getDialogButtonLayout()) {
+            case SIDE_BY_SIDE -> DialogType.confirmation(confirmButton, cancelButton);
+            case STACKED -> DialogType.multiAction(List.of(confirmButton, cancelButton)).columns(1).build();
+            case SEPARATED -> DialogType.multiAction(List.of(confirmButton)).exitAction(cancelButton).columns(1).build();
+        };
+
         Dialog dialog = Dialog.create(factory -> factory.empty()
                 .base(base)
-                .type(DialogType.multiAction(List.of(confirmButton)).exitAction(cancelButton).columns(1).build()));
+                .type(dialogType));
 
         player.showDialog(dialog);
     }
