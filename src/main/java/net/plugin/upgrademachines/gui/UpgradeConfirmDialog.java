@@ -17,7 +17,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,10 +49,11 @@ public final class UpgradeConfirmDialog {
         Component confirmLabel = legacy(manager.formatText(manager.getDialogConfirmLabel(), type, blockMaterial, current, target, max, effect, price));
         Component cancelLabel = legacy(manager.formatText(manager.getDialogCancelLabel(), type, blockMaterial, current, target, max, effect, price));
 
-        List<DialogBody> body = new ArrayList<>();
-        for (String line : manager.formatTextList(manager.getDialogBodyFormat(), type, blockMaterial, current, target, max, effect, price)) {
-            body.add(DialogBody.plainMessage(legacy(line)));
-        }
+        // One PlainMessageDialogBody per line renders with a large gap between each - joining
+        // into a single multi-line message (the client treats \n as a normal line break here,
+        // same as in signs/books) keeps the lines close together like a paragraph instead.
+        List<String> bodyLines = manager.formatTextList(manager.getDialogBodyFormat(), type, blockMaterial, current, target, max, effect, price);
+        List<DialogBody> body = List.of(DialogBody.plainMessage(legacy(String.join("\n", bodyLines))));
 
         // Single-use: once the player clicks either button the callback can't fire again for this dialog instance.
         ClickCallback.Options singleUse = ClickCallback.Options.builder().uses(1).build();

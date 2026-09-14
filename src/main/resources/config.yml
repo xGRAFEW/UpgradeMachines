@@ -54,10 +54,11 @@ gui:
   # ตั้งค่าเฉพาะตอน style: "dialog" (ไม่มีผลถ้าใช้ style อื่น)
   dialog:
     title-format: "&8อัพเกรด {name}"
+    # บรรทัด body ทั้งหมดจะถูกต่อเป็นข้อความเดียว (เว้นบรรทัดปกติ) ไม่ใช่แยกเป็นกล่องละบรรทัด - ระยะห่างเลยแน่นกว่า
     body:
-      - "ระดับ: {current-roman} → {level-roman}/{max-roman}"
-      - "ผล: {effect}"
-      - "ราคา: {price}"
+      - "&7ระดับ: &f{current-roman} &7→ &a{level-roman}&7/{max-roman}"
+      - "&7ผล: &f{effect}"
+      - "&7ราคา: &f{price}"
     confirm-label: "&a&lยืนยันอัพเกรด"
     cancel-label: "&c&lยกเลิก"
 

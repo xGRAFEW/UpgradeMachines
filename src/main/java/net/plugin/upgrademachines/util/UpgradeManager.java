@@ -222,12 +222,12 @@ public class UpgradeManager {
         return plugin.getConfig().getString("gui.dialog.title-format", "&8อัพเกรด {name}");
     }
 
-    /** Body lines of the Dialog screen, stacked top to bottom. */
+    /** Body lines of the Dialog screen, joined with line breaks into one compact paragraph (see UpgradeConfirmDialog). */
     public List<String> getDialogBodyFormat() {
         return getStringListOrDefault("gui.dialog.body", List.of(
-                "ระดับ: {current-roman} → {level-roman}/{max-roman}",
-                "ผล: {effect}",
-                "ราคา: {price}"));
+                "&7ระดับ: &f{current-roman} &7→ &a{level-roman}&7/{max-roman}",
+                "&7ผล: &f{effect}",
+                "&7ราคา: &f{price}"));
     }
 
     public String getDialogConfirmLabel() {
